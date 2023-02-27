@@ -9,3 +9,4 @@ build/
 *.egg
 multistrand
 .DS_STORE
+*.egg-info
