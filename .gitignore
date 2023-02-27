@@ -2,6 +2,7 @@
 *.txt
 *.pyc
 build/
+*.bak
 *.idea
 *.o
 *.so
