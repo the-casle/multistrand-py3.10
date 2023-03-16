@@ -10,3 +10,4 @@ build/
 multistrand
 .DS_STORE
 *.egg-info
+*-checkpoint.ipynb

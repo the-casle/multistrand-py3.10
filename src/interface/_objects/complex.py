@@ -266,7 +266,7 @@ class Complex(object):
             if '3.2' in os.environ['NUPACKHOME']:
                 sample_exec = os.environ['NUPACKHOME'] + '/build/bin/sample'
         else:
-            sample_exec = 'sample' 
+            sample_exec = 'sample'
         
         material = []
         if self._substrate_type == None:

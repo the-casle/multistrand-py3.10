@@ -42,15 +42,18 @@ def setup_ext( ):
 
 
 """ To update versioning, change here and in src/interface/__init__.py, and README.md """
+
+"""Something about needing nupack under packages"""
 if __name__ == '__main__':
 
     multi_ext = setup_ext( )
     
     setup(name="multistrand", version="2.1",
-          packages=['multistrand','multistrand._options','multistrand._objects','nupack'],
+          packages=['multistrand','multistrand._options','multistrand._objects'],
           url='http://www.multistrand.org',
           license='MIT',
           author='The Multistrand Teamit',
+          maintainer='Jake Kaslewicz',
           author_email='help@multistrand.org',
           package_dir={'multistrand':'src/interface'},
           ext_modules=[multi_ext])
