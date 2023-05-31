@@ -217,6 +217,7 @@ class Complex(object):
         self._magnesium = magnesium
     
     def generate_boltzmann_structure(self):
+        print("We generating boltmann_structures")
         """
         Create a new boltzmann sampled structure for this complex.
         
@@ -259,7 +260,7 @@ class Complex(object):
         # 2) Otherwise, 'sample' should be found using your user $PATH.
         # 3) Beware that there is a standard BSD tool with that name: if you are using OS X, 
         #    make sure that your path to the nupack 'sample' occurs before /usr/bin or it may not find it correctly.
-        
+
         if 'NUPACKHOME' in os.environ:
             if '3.0' in os.environ['NUPACKHOME']:
                 sample_exec = os.environ['NUPACKHOME'] + '/bin/sample'
@@ -267,6 +268,7 @@ class Complex(object):
                 sample_exec = os.environ['NUPACKHOME'] + '/build/bin/sample'
         else:
             sample_exec = 'sample'
+        sample_exec = '/Users/jakaslewicz/nupack3.2.2/build/bin/sample'
         
         material = []
         if self._substrate_type == None:
@@ -310,6 +312,7 @@ class Complex(object):
                                                    "\n".join([i.sequence for i in self.strand_list]),
                                                    " ".join([str(i + 1) for i in range(len(self.strand_list))])
                                                  )
+        print(type(input_str))
         result = p.communicate(input_str)[0]
         
         f = open(tmp.name, "rt")

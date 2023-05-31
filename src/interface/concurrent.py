@@ -106,64 +106,64 @@ class MergeResult(object):
 class FirstStepRate(MergeResult):
 
     def sumCollisionForward(self):
-        return sum([np.float(i.collision_rate) for i in self.dataset if i.tag == Literals.success])
+        return sum([float(i.collision_rate) for i in self.dataset if i.tag == Literals.success])
 
     def sumCollisionForwardAlt(self):
-        return sum([np.float(i.collision_rate) for i in self.dataset if i.tag == Literals.alt_success])
+        return sum([float(i.collision_rate) for i in self.dataset if i.tag == Literals.alt_success])
 
     def sumCollisionReverse(self):
-        return sum([np.float(i.collision_rate) for i in self.dataset if i.tag == Literals.failure])
+        return sum([float(i.collision_rate) for i in self.dataset if i.tag == Literals.failure])
 
     def weightedForwardUni(self):
 
-        mean_collision_forward = np.float(self.sumCollisionForward()) / np.float(self.nForward)
-        weightedForwardUni = sum([np.float(i.collision_rate) * np.float(i.time) for i in self.dataset if i.tag == Literals.success])
+        mean_collision_forward = float(self.sumCollisionForward()) / float(self.nForward)
+        weightedForwardUni = sum([float(i.collision_rate) * float(i.time) for i in self.dataset if i.tag == Literals.success])
 
-        return weightedForwardUni / (mean_collision_forward * np.float(self.nForward))
+        return weightedForwardUni / (mean_collision_forward * float(self.nForward))
 
     def weightedReverseUni(self):
 
         if self.nReverse == 0:
-            return np.float(0)
+            return float(0)
 
-        mean_collision_reverse = np.float(self.sumCollisionReverse()) / np.float(self.nReverse)
-        weightedReverseUni = sum([np.float(i.collision_rate) * np.float(i.time) for i in self.dataset if i.tag == Literals.failure])
+        mean_collision_reverse = float(self.sumCollisionReverse()) / float(self.nReverse)
+        weightedReverseUni = sum([float(i.collision_rate) * float(i.time) for i in self.dataset if i.tag == Literals.failure])
 
-        return weightedReverseUni / (mean_collision_reverse * np.float(self.nReverse))
+        return weightedReverseUni / (mean_collision_reverse * float(self.nReverse))
 
     def k1(self):
 
         if self.nForward == 0:
             return MINIMUM_RATE
         else:
-            return self.sumCollisionForward() / np.float(self.nTotal)
+            return self.sumCollisionForward() / float(self.nTotal)
 
     def k1Alt(self):
         if self.nForwardAlt == 0:
             return MINIMUM_RATE
         else:
-            return self.sumCollisionForwardAlt() / np.float(self.nTotal)
+            return self.sumCollisionForwardAlt() / float(self.nTotal)
 
     def k1Prime(self):
 
         if self.nReverse == 0:
             return MINIMUM_RATE
         else:
-            return self.sumCollisionReverse() / np.float(self.nTotal)
+            return self.sumCollisionReverse() / float(self.nTotal)
 
     def k2(self):
 
         if self.nForward == 0:
             return MINIMUM_RATE
         else:
-            return np.float(1.0) / self.weightedForwardUni()
+            return float(1.0) / self.weightedForwardUni()
 
     def k2Prime(self):
 
         if self.nReverse == 0:
             return MINIMUM_RATE
         else:
-            return np.float(1.0) / self.weightedReverseUni()
+            return float(1.0) / self.weightedReverseUni()
 
     def kEff(self, concentration=None):
 
@@ -171,7 +171,7 @@ class FirstStepRate(MergeResult):
             print("Cannot compute k_effective without concentration")
             return MINIMUM_RATE
 
-        concentration = np.float(concentration)
+        concentration = float(concentration)
 
         if self.nForward == 0:
             return MINIMUM_RATE
@@ -182,12 +182,12 @@ class FirstStepRate(MergeResult):
         # the expected rate for a collision
         collTime = self.k1() + self.k1Prime()
 
-        dTForward = np.float(1.0) / self.k2() + np.float(1.0) / (concentration * collTime)
-        dTReverse = np.float(1.0) / self.k2Prime() + np.float(1.0) / (concentration * collTime)
+        dTForward = float(1.0) / self.k2() + float(1.0) / (concentration * collTime)
+        dTReverse = float(1.0) / self.k2Prime() + float(1.0) / (concentration * collTime)
 
         dT = dTReverse * multiple + dTForward
 
-        return (np.float(1.0) / dT) * (np.float(1.0) / concentration)
+        return (float(1.0) / dT) * (float(1.0) / concentration)
 
     def testForTwoStateness(self, concentration=None):
 
@@ -196,8 +196,8 @@ class FirstStepRate(MergeResult):
             return True
 
         # Test if the failed trajectory and the success trajectory are dominated ( > 10% of total ) by the unimolecular phase
-        tau_bi_succ = np.float(1) / (self.k1() * concentration)
-        tau_bi_fail = np.float(1) / (self.k1Prime() * concentration)
+        tau_bi_succ = float(1) / (self.k1() * concentration)
+        tau_bi_fail = float(1) / (self.k1Prime() * concentration)
 
         testFail = (tau_bi_fail / self.weightedReverseUni()) < 9
         testSucces = (tau_bi_succ / self.weightedForwardUni()) < 9
@@ -271,29 +271,29 @@ class FirstStepLeakRate(MergeResult):
         self.dataset = [x for x in self.dataset if ((x.tag == Literals.success) or x.tag == Literals.alt_success)]
 
     def sumCollisionForward(self):
-        return sum([np.float(i.collision_rate) for i in self.dataset if i.tag == Literals.success])
+        return sum([float(i.collision_rate) for i in self.dataset if i.tag == Literals.success])
 
     def sumCollisionForwardAlt(self):
-        return sum([np.float(i.collision_rate) for i in self.dataset if i.tag == Literals.alt_success])
+        return sum([float(i.collision_rate) for i in self.dataset if i.tag == Literals.alt_success])
 
     def k1(self):
         if self.nForward == 0:
             return MINIMUM_RATE
         else:
-            return self.sumCollisionForward() / np.float(self.nTotal)
+            return self.sumCollisionForward() / float(self.nTotal)
 
     def k1Alt(self):
         if self.nForwardAlt == 0:
             return MINIMUM_RATE
         else:
-            return self.sumCollisionForwardAlt() / np.float(self.nTotal)
+            return self.sumCollisionForwardAlt() / float(self.nTotal)
 
     def resample(self):
 
         new_dataset = []
         time_outs = self.nTotal - self.nForward - self.nReverse - self.nForwardAlt
         successful_trials = len(self.dataset)
-        p = np.float(successful_trials) / self.nTotal
+        p = float(successful_trials) / self.nTotal
         # the number of succesful trials
         success = np.random.binomial(self.nTotal, p)
 
@@ -375,12 +375,12 @@ class FirstPassageRate(MergeResult):
     def k1(self):
         
         mean = np.mean([i.time for i in self.dataset])
-        return np.float(1.0) / (mean)
+        return float(1.0) / (mean)
 
     def kEff(self, concentration):
 
         mean = np.mean([i.time for i in self.dataset])
-        kEff = np.float(1.0) / (mean * concentration)
+        kEff = float(1.0) / (mean * concentration)
 
         return kEff
 

@@ -21,7 +21,7 @@ import numpy as np
 ATIME_OUT = 10.0
 
 myMultistrand = MergeSim()
-myMultistrand.setNumOfThreads(8) 
+myMultistrand.setNumOfThreads(8)
 myMultistrand.setLeakMode()
 
 
@@ -43,8 +43,8 @@ def first_step_simulation(strand_seq, trials, T=25, material="DNA"):
 
 
     # Declare the simulation complete if the strands become a perfect duplex.
-    success_stop_condition = StopCondition(Literals.success, [(duplex_invaded, Options.dissoc_macrostate, 0)])
-    failed_stop_condition = StopCondition(Literals.failure, [(duplex_complex, Options.dissoc_macrostate, 0)])
+    success_stop_condition = StopCondition(Literals.success, [(duplex_invaded, 2, 0)])
+    failed_stop_condition = StopCondition(Literals.failure, [(duplex_complex, 2, 0)])
 
     for x in [duplex_complex, invader_complex]:
         x.boltzmann_count = trials
