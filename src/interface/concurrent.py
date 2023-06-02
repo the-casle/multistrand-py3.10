@@ -24,8 +24,10 @@ import sys
 import random
 
 from multistrand.options import Options, Literals
-import multiprocessing_on_dill as multiprocessing
+import multiprocess as multiprocessing
 import numpy as np
+
+from nupack import *
 
 from multistrand.system import SimSystem
 
@@ -604,6 +606,7 @@ class MergeSim(object):
 
     numOfThreads = 2
     seed = 7713147777
+    ctx = multiprocessing.get_context('spawn')
 
     def __init__(self, settings=None):
 
@@ -804,7 +807,7 @@ class MergeSim(object):
             for x in options.stop_conditions:
                 myString += x.__str__() + "\n"
 
-        myProc = multiprocessing.Process(target=hiddenPrint, args=[outputString])
+        myProc = self.ctx.Process(target=hiddenPrint, args=[outputString])
         myProc.start()
         myProc.join()
         myProc.terminate()
@@ -840,8 +843,8 @@ class MergeSim(object):
             for i in self.factory.new(0).stop_conditions:
                 print(i)
                 print("\n")
-             
-        myProc = multiprocessing.Process(target=actualPrint, args=[])
+
+        myProc = self.ctx.Process(target=actualPrint, args=[])
         myProc.start()
         myProc.join()
         myProc.terminate()
@@ -866,14 +869,13 @@ class MergeSim(object):
         self.endStates = []
 
         def doSim(myFactory, aFactory, list0, list1, instanceSeed, nForwardIn, nReverseIn):
-
             try:
                 myOptions = myFactory.new(instanceSeed)
                 myOptions.num_simulations = self.trialsPerThread
             except:
                 self.exceptionFlag.value = False
                 return
-            
+
             """ Overwrite the result factory method if we are not using First Step Mode.
                 By default, the results object is a First Step object.
             """
@@ -906,14 +908,14 @@ class MergeSim(object):
                 aFactory.doAnalysis(myOptions)
 
         def getSimulation(input):
-            
+
             instanceSeed = self.seed + input * 3 * 5 * 19 + (time.time() * 10000) % (math.pow(2, 32) - 1)
-            return multiprocessing.Process(target=doSim, args=(self.factory, self.aFactory, self.managed_result, self.managed_endStates, instanceSeed, self.nForward, self.nReverse))          
+            return self.ctx.Process(target=doSim, args=(self.factory, self.aFactory, self.managed_result, self.managed_endStates, instanceSeed, self.nForward, self.nReverse))
 
         # this saves the results generated so far as regular Python objects,
         # and clears the concurrent result lists.
         def saveResults():
-            
+
             if self.settings.terminationCount == None:
                 # just let the threads join peacefully
                for i in range(self.numOfThreads):
@@ -941,18 +943,17 @@ class MergeSim(object):
             # reset the multiprocessing results lists.
             self.managed_result = manager.list()
             self.managed_endStates = manager.list()
-            # this should also reset the 
-            self.settings.saveInterval += self.settings.saveIncrement 
+            # this should also reset the
+            self.settings.saveInterval += self.settings.saveIncrement
 
         # give a print of the initial states and stopping conditions
-        
+
         self.printStates()
 
         # start the initial bulk
         print(self.startSimMessage())
         
         procs = []
-
         for i in range(self.numOfThreads):
         
             p = getSimulation(i)
