@@ -288,9 +288,6 @@ class Complex(object):
 
         if len(self._boltzmann_queue) < 1:
             raise IOError("Did not get any results back from the Boltzmann sample function.")
-        
-        # print "This is the (length %d) queue:" % len(self._boltzmann_queue)
-        # print lines[14:]
 
         self._pop_boltzmann()
     

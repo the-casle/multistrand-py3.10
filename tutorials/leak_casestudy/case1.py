@@ -21,7 +21,7 @@ import numpy as np
 ATIME_OUT = 10.0
 
 myMultistrand = MergeSim()
-myMultistrand.setNumOfThreads(1)
+myMultistrand.setNumOfThreads(8)
 myMultistrand.setLeakMode()
 
 
