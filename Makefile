@@ -72,6 +72,7 @@ Multistrand: Multistrand-internal
 # clear out all the implicit rules that might be run.
 
 # Targets for cleaning up our builds.
+# These don't really do anything because apparently wheels don't need to be cleaned - Jake
 clean: package-clean
 
 package-clean:
