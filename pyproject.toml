@@ -1,0 +1,39 @@
+# Copyright (c) 2010-2017 Caltech. All rights reserved.
+# Joseph Schaeffer (schaeffer@dna.caltech.edu)
+# Frits Dannenberg (fdann@dna.caltech.edu)
+
+[build-system]
+requires = ["setuptools", "setuptools-scm"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "multistrand"
+authors = [
+    {name = "The Multistrand Teamit", email = "help@multistrand.org"},
+]
+maintainers = [
+    {name = "Jake Kaslewicz", email = "kasle001@umn.edu"},
+]
+version = "3.1"
+description = "Nucleic acids kinetic simulator"
+requires-python = ">=3.7"
+keywords = ["DNA", "kinetics", "simulator"]
+license = {text = "MIT"}
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+]
+
+dependencies = [
+    "multiprocess",
+]
+
+[project.urls]
+"Homepage" = "http://www.multistrand.org"
+
+[tool.setuptools]
+packages = ["multistrand", "multistrand._options", "multistrand._objects"
+]
+
+package-dir={"multistrand" = "src/interface"}

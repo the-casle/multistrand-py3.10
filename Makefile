@@ -91,7 +91,7 @@ package:
 	@echo Building the 'multistrand' Python package.
 	@if [ -d obj/package_debug/ ]; then $(MAKE) package-debug-clean; fi
 	@if [ -d obj/package_profiler/ ]; then $(MAKE) package-profiler-clean; fi
-	$(PYTHON_COMMAND) setup.py build -b ./ -t obj/package/ --build-lib ./ --debug
+	$(PYTHON_COMMAND) -m build -w -o ./dist -C--debug ./
 	@echo Multistrand is now built. Run 'sudo make install' to install Multistrand to your Python site packages.
 
 #documentation
@@ -101,7 +101,7 @@ docs:
 #install
 install:
 	@echo Installing the 'multistrand' Python package to your python site-packages.
-	$(PYTHON_COMMAND) setup.py install
+	@pip install ./
 
 
 # utilities targets

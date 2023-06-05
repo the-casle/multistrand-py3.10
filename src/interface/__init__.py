@@ -10,4 +10,4 @@
 
 # defines what 'from multistrand import *' means.
 __all__ = ['objects','options', 'system', 'utils', 'experiment', 'concurrent', 'builder']
-__version__ = "2.1"
+__version__ = "3.1"

@@ -936,7 +936,7 @@ class MergeSim(object):
             self.results.merge(myFSR, deepCopy=True)
 
             # save the terminal states if we are not in leak mode
-            if self.settings.resultsType == self.settings.RESULTTYPE2:
+            if self.settings.resultsType != self.settings.RESULTTYPE2:
                 print(self.results)
 
             # reset the multiprocessing results lists.
@@ -958,7 +958,7 @@ class MergeSim(object):
             p = getSimulation(i)
             procs.append(p)
             p.start()
-                
+
         printFlag = False
 
         # check for stop conditions, restart sims if needed
@@ -974,13 +974,13 @@ class MergeSim(object):
             for i in range(self.numOfThreads):
 
                 if not procs[i].is_alive():
-                        
+
                     procs[i].join()
                     procs[i].terminate()
 
                     procs[i] = getSimulation(i)
                     procs[i].start()
-                    
+
                     printFlag = True
 
             time.sleep(0.25)
@@ -998,12 +998,12 @@ class MergeSim(object):
         """ is not cleak """
         if not self.settings.resultsType == MergeSimSettings.RESULTTYPE2:
             self.results.generateCounts()
-        
+
         print(self.results)
 
         if self.settings.bootstrap == True:
             self.results.doBootstrap(self.settings.bootstrapN)
 
-        self.writeToFile()    
+        self.writeToFile()
         return 0
 

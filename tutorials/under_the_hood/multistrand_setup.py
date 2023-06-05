@@ -8,8 +8,8 @@ import os, sys, subprocess, tempfile
 
 multihome = None
 if 'MULTISTRANDHOME' in os.environ:
-    if not os.path.isfile( os.path.join( os.environ['MULTISTRANDHOME'], 'setup.py') ):
-        warnings.warn( ImportWarning("Could not find the file 'setup.py' in your MULTISTRANDHOME [{0}]; this environment variable is possibly out of date or not referring to the new Multistrand distribution."))
+    if not os.path.isfile( os.path.join( os.environ['MULTISTRANDHOME'], 'setup1.py') ):
+        warnings.warn( ImportWarning("Could not find the file 'setup1.py' in your MULTISTRANDHOME [{0}]; this environment variable is possibly out of date or not referring to the new Multistrand distribution."))
     else:
         if os.environ['MULTISTRANDHOME'] not in sys.path:
             multihome= os.environ['MULTISTRANDHOME']     

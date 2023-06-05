@@ -2,11 +2,8 @@
 # Joseph Schaeffer (schaeffer@dna.caltech.edu)
 # Frits Dannenberg (fdann@dna.caltech.edu)
 
-from distutils.core import setup, Extension
-import distutils.sysconfig
-import os, sys
+from setuptools import Extension, setup
 
-config_vars = distutils.sysconfig.get_config_vars()
 
 sources = ["src/system/utility.cc",
            "src/system/sequtil.cc",
@@ -28,35 +25,15 @@ sources = ["src/system/utility.cc",
            "src/state/strandordering.cc"
            ]
 
-def setup_ext( ):    
 
-    multi_ext = Extension("multistrand.system",
-                          sources=sources,
-                          include_dirs=["./src/include"],
-                          language="c++",
-                        undef_macros=['NDEBUG'],
-                        extra_compile_args = ['-O3', '-w', "-std=c++11",], #FD: adding c++11 flag
-                          )
-    return multi_ext
-
-
-
-""" To update versioning, change here and in src/interface/__init__.py, and README.md """
-
-"""Something about needing nupack under packages"""
-if __name__ == '__main__':
-
-    multi_ext = setup_ext( )
-    
-    setup(name="multistrand", version="2.1",
-          packages=['multistrand','multistrand._options','multistrand._objects'],
-          url='http://www.multistrand.org',
-          license='MIT',
-          author='The Multistrand Teamit',
-          maintainer='Jake Kaslewicz',
-          author_email='help@multistrand.org',
-          package_dir={'multistrand':'src/interface'},
-          ext_modules=[multi_ext])
-
-
-
+setup(
+    ext_modules=[
+        Extension("multistrand.system",
+                  sources=sources,
+                  include_dirs=["./src/include"],
+                  language="c++",
+                  undef_macros=['NDEBUG'],
+                  extra_compile_args=['-O3', '-w', "-std=c++11", ],  # FD: adding c++11 flag
+                  ),
+    ]
+)
