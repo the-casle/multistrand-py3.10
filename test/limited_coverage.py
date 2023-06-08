@@ -178,7 +178,7 @@ def run_sims():
     # so there's no need to re-initialize the energy model before each one.
 
 
-    all_results = [o.interface.results for o in [o1, o2, o3, o4]]
+    all_results = [i for o in [o1, o2, o3, o4]]
     all_seqs = [o.start_state[0].sequence for o in [o1, o2, o3, o4]]
 
     print("Plotting results...")
