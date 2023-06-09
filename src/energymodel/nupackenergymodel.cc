@@ -170,12 +170,16 @@ double NupackEnergyModel::InteriorEnergy(char *seq1, char *seq2, int size1, int 
 
 	double energy, ninio;
 
-	int type1 = pairtypes[seq1[0]][seq2[size2 + 1]] - 1;
-	int type2 = pairtypes[seq1[size1 + 1]][seq2[0]] - 1;
-
+    printf("type1: %i %i\n", seq1[0], seq2[size2 + 1]);
+    printf("type2: %i %i\n", seq1[size1 + 1], seq2[0]);
+	int type1 = pairtypes[seq1[0]][seq2[size2 + 1]] - 1; //seq1[0][0] / size2[1][1]
+	int type2 = pairtypes[seq1[size1 + 1]][seq2[0]] - 1; //seq1[1][1] / size2[0][0]
 	// special case time. 1x1, 2x1 and 2x2's all get special cases.
-	if (size1 == 1 && size2 == 1)
-		return internal.internal_1_1[type1][type2][seq1[1]][seq2[size2]];
+	if (size1 == 1 && size2 == 1){
+	    printf("Type1: %i type2: %i\n", type1, type2);
+        printf("base1: %i base2: %i\n", seq1[1], seq2[size2]);
+		return internal.internal_1_1[type1][type2][seq1[1]][seq2[size2]]; //seq1[1][0] seq2[1][0]
+	}
 	if (size1 <= 2 && size2 <= 2)
 		if (size1 == 1 || size2 == 1) {
 			if (size1 == 1)
