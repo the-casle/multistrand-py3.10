@@ -412,7 +412,6 @@ RateArr Loop::generateDeleteMoveRate(Loop *start, Loop *end) {
 		// we must get the mismatches correct for this to come out right
 		// as they are special cases in the energy model, for 1,1.
 
-        printf("Start: %s\n End: %s\n", start->toString().c_str(), end->toString().c_str());
 		new_energy = energyModel->InteriorEnergy(start_->seqs[s_index], end_->seqs[e_index], 1, 1);
 
 		old_energy = start->getEnergy() + end->getEnergy();
@@ -424,7 +423,6 @@ RateArr Loop::generateDeleteMoveRate(Loop *start, Loop *end) {
 
 		right = stackMove;
 		left = stackMove;
-        printf("The rate: %f, old energy: %f new energy: %f\n", tempRate, old_energy, new_energy);
 		return RateArr(tempRate / 2.0, left, right);
 	}
 
@@ -2589,7 +2587,6 @@ Loop *Loop::performDeleteMove(Move *move) {
 /* StackLoop */
 
 void StackLoop::calculateEnergy(void) {
-    printf("calculating stack\n");
 	assert(Loop::energyModel != NULL);
 	energy = Loop::energyModel->StackEnergy(seqs[0][0], seqs[1][1], seqs[0][1], seqs[1][0]);
 }
@@ -2767,7 +2764,6 @@ string HairpinLoop::typeInternalsToString(void) {
 }
 
 void HairpinLoop::calculateEnergy(void) {
-    printf("calculating hairpin\n");
 	assert(energyModel != NULL);
 
 	energy = energyModel->HairpinEnergy(hairpin_seq, hairpinsize);
@@ -3057,7 +3053,6 @@ Move *BulgeLoop::getChoice(SimTimer& timer, Loop *from) {
 }
 
 void BulgeLoop::calculateEnergy(void) {
-    printf("calculating bulge\n");
 	assert(energyModel != NULL);
 
 	energy = energyModel->BulgeEnergy(bulge_seq[0][0], bulge_seq[1][bulgesize[1] + 1], bulge_seq[0][bulgesize[0] + 1], bulge_seq[1][0],
@@ -3339,7 +3334,6 @@ Move *InteriorLoop::getChoice(SimTimer& timer, Loop *from) {
 }
 
 void InteriorLoop::calculateEnergy(void) {
-    printf("calculating interior\n");
 	assert(energyModel != NULL);
 
 	if (int_seq[0] == NULL || int_seq[1] == NULL)
@@ -3746,7 +3740,6 @@ Move *MultiLoop::getChoice(SimTimer& timer, Loop *from) {
 }
 
 void MultiLoop::calculateEnergy(void) {
-    printf("calculating multi\n");
 	assert(energyModel!=NULL);
 	energy = energyModel->MultiloopEnergy(numAdjacent, sidelen, seqs);
 
@@ -4350,7 +4343,6 @@ string OpenLoop::typeInternalsToString(void) {
 }
 
 void OpenLoop::calculateEnergy(void) {
-    printf("calculating open\n");
 	assert(energyModel != NULL);
 	energy = energyModel->OpenloopEnergy(numAdjacent, sidelen, seqs);
 

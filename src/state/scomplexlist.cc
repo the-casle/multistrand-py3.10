@@ -72,7 +72,6 @@ void SComplexListEntry::fillData(EnergyModel *em) {
 
 	energy = thisComplex->getEnergy() + (em->getVolumeEnergy() + em->getAssocEnergy()) * (thisComplex->getStrandCount() - 1);
 	rate = thisComplex->getTotalFlux();
-    printf("energy: %f\n", energy);
 }
 
 /*
