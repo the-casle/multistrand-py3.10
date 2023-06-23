@@ -19,8 +19,9 @@ Contributors:
 * Justin Bois
 * Joseph Berleant
 * Joseph Schaeffer
+* Jake Kaslewicz        kasle001@umn.edu
 
-Questions should be directed to help@multistrand.org. Also see www.multistrand.org
+Questions should be directed to help@multistrand.org or kasle001@umn.edu. Also see www.multistrand.org
 
 
 Frits Dannenberg, May 26rd, 2017
@@ -29,7 +30,7 @@ Frits Dannenberg, May 26rd, 2017
 ## Licence ##
 
 Multistrand, kinetic simulator for nucleic acids.
-Copyright 2017, California Institute of Technology. All rights reserved.
+Copyright 2023, California Institute of Technology. All rights reserved.
 
 Using this software is permitted for academic non-commercial purposes only. All copyright is retained by Caltech. 
 
@@ -42,14 +43,13 @@ out of or in connection with the software or the use or other dealings in the so
 
 ## Requirements ##
 
-| Dependency | Notes               | 
-| ---------- | ------              |
-| c++11      | gcc 4.8.5+ or clang/llvm 8.0.0   |  
-|  python2   |  2.7.12+       	   | 
-| NUPACK - www.nupack.org    |  **3.2.1**  | 
-|  make      |  4.0+         | 
- 
-As of mid-2017, NUPACK 3.2.1 was released, which restores the sample functionality that Multistrand depends on. Users no longer need to patch nupack in order to use first step mode. 
+| Dependency              | Notes                          | 
+|-------------------------|--------------------------------|
+| c++11                   | gcc 4.8.5+ or clang/llvm 8.0.0 |  
+| python3                 | 3.10.8+       	                | 
+| NUPACK - www.nupack.org | 4.0.0+                         | 
+| make                    | 4.0+                           | 
+| build                   | 0.10.0+                        | 
 
 Some users may need to install 'make' first. You can check that make is installed by simplying calling "make" in the terminal, which should return a message similar to the below. You can similarly run "python -V",  "gcc -v" and "clang -V" to check which python, gcc and clang are installed. Mac users may need to install xcode in order to proceed. 
 ```sh
