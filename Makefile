@@ -81,7 +81,7 @@ package-clean:
 	-rm -rf multistrand/
 	# Do not use --all here! This could delete your distribution.
 
-distclean: package-clean package-debug-clean clean
+distclean: package-clean clean
 	@echo Removing object file directories.
 	-rmdir obj/package_debug/
 	-rmdir obj/package/

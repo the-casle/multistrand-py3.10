@@ -597,6 +597,11 @@ void NupackEnergyModel::processOptions() {
 
 		nupackhome = getenv("NUPACKHOME");
 
+		if(nupackhome == NULL){
+		    fprintf(stderr, "ERROR: NUPACKHOME environment variable not set properly. Review setup instructions\n");
+			exit(1);
+		}
+
 		if (myEnergyOptions->compareSubstrateType(SUBSTRATE_DNA)) {
 			file = "dna04.json";
 		} else {
@@ -617,7 +622,7 @@ void NupackEnergyModel::processOptions() {
 			fprintf(stderr,
 					"ERROR: Temperature was set to %0.2lf C, but only dG type data files could be found. Please ensure that the requested parameter set has both .dG and .dH files!\n",
 					temperature);
-			exit(0);
+			exit(1);
 		}
 		return;
 	}

@@ -13,16 +13,16 @@ import sys, os
 import math
 import numpy as np
 
-from anneal import compute as computeAnneal
-from dissociation import compute as computeDissociation
+from tutorials.compute.anneal import compute as computeAnneal
+from tutorials.compute.dissociation import compute as computeDissociation
 from nupack import pfunc
 
 
-# # For each column, compute the rate and print it to a file. 
+# # For each column, compute the rate and print it to a file.
 resultFileName = "dissociation_comparison.txt"
 file = open(resultFileName, 'w+')
 
-file.write("Seq    temp     predicted-D    predicted-A   difference \n\n") 
+file.write("Seq    temp     predicted-D    predicted-A   difference \n\n")
 
 
 def comparison():
@@ -41,7 +41,7 @@ def comparison():
     # FD: just leaving this linking for now, meaning the simulation
     # settings will default to whatever is default for these functions
     
-    predictedA = computeAnneal(seq, temp, 1.0)          
+    predictedA = computeAnneal(seq, temp, 1.0)
     predictedD = computeDissociation(seq, temp)
     
     dotparen = "("*len(seq) + "+" + ")"*len(seq)
@@ -62,8 +62,8 @@ def comparison():
 
     file.flush()
 
+if __name__ == '__main__':
+    comparison()
 
-comparison() 
 
-
-file.close()
+    file.close()

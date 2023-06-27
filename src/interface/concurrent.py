@@ -612,7 +612,7 @@ class MergeSim(object):
 
         self.initializationTime = time.time()
         if(multiprocessing.current_process().name == "MainProcess"):
-            print("%s%s" % (timeStamp(), "  Starting Multistrand 2.1      (c) 2008-2017 Caltech      "))
+            print("%s%s" % (timeStamp(), "  Starting Multistrand 2.3      (c) 2008-2023 Caltech      "))
 
         self.factory = optionsFactory
         self.aFactory = None

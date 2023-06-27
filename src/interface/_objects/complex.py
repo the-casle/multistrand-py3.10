@@ -244,7 +244,7 @@ class Complex(object):
         if self._boltzmann_sizehint > self.MAX_SAMPLES_AT_ONCE * self.boltzmann_supersample:
             count = self.MAX_SAMPLES_AT_ONCE
         elif self._boltzmann_sizehint >= 1:
-            count = (self._boltzmann_sizehint / self.MAX_SAMPLES_AT_ONCE) + 1
+            count = int(self._boltzmann_sizehint / self.MAX_SAMPLES_AT_ONCE) + 1
         else:
             count = 1
 

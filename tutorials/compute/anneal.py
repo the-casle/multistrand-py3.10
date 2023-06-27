@@ -64,11 +64,8 @@ def computeAndWriteToCL(strand_seq, doBootstrap):
 # compute dissociation from association rate
 def computeDissociationAndWriteToCL(strand_seq, doBootstrap):
 
-    
-    
-    
     result = first_step_simulation(strand_seq, 1200, material="DNA")
-    
+
     seq = strand_seq
     seqC = seqComplement(seq)
     

@@ -6,7 +6,8 @@
         | |  | | |_| | | |_| \__ \ |_| | | (_| | | | | (_| |
         \_|  |_/\__,_|_|\__|_|___/\__|_|  \__,_|_| |_|\__,_|  
 
-Multistrand is a nucleic acids kinetic simulator, and is developed by the Winfree group at the California Institute of Technology in Pasadena, California (USA). Until 2013, development was lead by Joseph Schaeffer (now Autodesk).
+Multistrand is a nucleic acids kinetic simulator, and is developed by the Winfree group at the California Institute of Technology in Pasadena, California (USA). Until 2013, development was lead by Joseph Schaeffer (now Autodesk). 
+The project is currently maintained by Jake Kaslewicz.
 
 
 Contributors:
@@ -46,15 +47,17 @@ out of or in connection with the software or the use or other dealings in the so
 | Dependency              | Notes                          | 
 |-------------------------|--------------------------------|
 | c++11                   | gcc 4.8.5+ or clang/llvm 8.0.0 |  
-| python3                 | 3.10.8+       	                | 
+| python3                 | 3.7.4+       	                 | 
 | NUPACK - www.nupack.org | 4.0.0+                         | 
 | make                    | 4.0+                           | 
 | build                   | 0.10.0+                        | 
 
-Some users may need to install 'make' first. You can check that make is installed by simplying calling "make" in the terminal, which should return a message similar to the below. You can similarly run "python -V",  "gcc -v" and "clang -V" to check which python, gcc and clang are installed. Mac users may need to install xcode in order to proceed. 
+Some users may need to install 'make' first. You can check that make is installed by simplying calling "make" in the terminal, which should return a message similar to the below. You can similarly run "python -V",  "gcc -v" and "clang -V" to check which python, gcc and clang are installed. Mac users may need to install xcode in order to proceed.
 ```sh
 $ make: *** No targets specified and no makefile found.  Stop.
 ```
+
+'build' can be installed via 'pip install build'.
 
 Tutorial files use the 'numpy', 'matplotlib' and 'scipy' python packages. You can install these using 'pip install numpy', and so on.
 
@@ -68,18 +71,17 @@ Tutorial files use the 'numpy', 'matplotlib' and 'scipy' python packages. You ca
  - Build multistrand by running 'make' in the Multistrand directory.
  - Multistrand can be exported as a python library by calling 'sudo make install'.
 
-In Fedora, add 'export NUPACKHOME=/path/to/nupack3.2.1' to ~/.bashrc to make the export permanent.
+For example: In Fedora, add 'export NUPACKHOME=/path/to/nupack3.2.1' to ~/.bashrc to make the export permanent. In general, this file will depend on the shell profile being used.
 To verify that NUPACKHOME is set correctly in bash, run 'echo $NUPACKHOME':
 ```sh
 $ echo $NUPACKHOME
-/home/user/path/to/nupack3.2.1
+/home/user/path/to/nupack4.0.1
 ```
 For OS X, the following steps enabled successful installation on a 2017 macbook pro. 
 
  - Install xcode commandline tools
  - Install brew (homebrew) and install python through homebrew (command: 'brew install python').
  - The linux installation steps should now work. 
- - In the bash profile file ~/.bash_profile, edit the python path to include /Library/Python/2.7/site-packages. For example, the line could read: export PYTHONPATH=/Library/Python/2.7/site-packages:$PYTHONPATH. 
 
 ### Troubleshooting ###
 
