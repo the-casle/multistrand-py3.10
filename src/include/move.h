@@ -9,6 +9,8 @@
 #ifndef __MOVE_H__
 #define __MOVE_H__
 
+#include <cstdint>
+
 const int MOVE_INVALID = 0;
 const int MOVE_CREATE = 1;
 const int MOVE_DELETE = 2;
@@ -19,7 +21,6 @@ const int MOVE_3 = 32;
 
 #include <string>
 #include <moveutil.h>
-#include <cstdint>
 #include "simtimer.h"
 
 using std::string;
