@@ -9,8 +9,6 @@
 #ifndef __MOVE_H__
 #define __MOVE_H__
 
-#include <cstdint>
-
 const int MOVE_INVALID = 0;
 const int MOVE_CREATE = 1;
 const int MOVE_DELETE = 2;

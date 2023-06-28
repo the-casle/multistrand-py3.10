@@ -12,6 +12,7 @@
 #include <vector>
 #include <map>
 #include <sequtil.h>
+#include <cstdint>
 
 using std::vector;
 using std::string;
