@@ -19,6 +19,7 @@ const int MOVE_3 = 32;
 
 #include <string>
 #include <moveutil.h>
+#include <cstdint>
 #include "simtimer.h"
 
 using std::string;
