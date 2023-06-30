@@ -35,7 +35,7 @@ find_executable = $(strip $(firstword $(foreach file,$(1),$(call path_search,$(f
 ## If there's a better 'default' set of names for the debug version,
 ## we can add it to the list checked.
 ##
-PYTHON_NAMES       := python python3
+PYTHON_NAMES       := python3
 PYTHON_DEBUG_NAMES := python-debug
 PYTHON_COMMAND = $(call find_executable,$(PYTHON_NAMES))
 PYTHON_DEBUG_COMMAND = $(call find_executable,$(PYTHON_DEBUG_NAMES) $(PYTHON_NAMES))
@@ -102,7 +102,7 @@ docs:
 #install
 install:
 	@echo Installing the 'multistrand' Python package to your python site-packages.
-	@pip install ./
+	$(PYTHON_COMMAND) -m pip install ./
 
 
 # utilities targets
