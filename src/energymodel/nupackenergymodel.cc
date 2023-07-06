@@ -413,7 +413,6 @@ double NupackEnergyModel::OpenloopEnergy(int size, int *sidelen, char **sequence
 		if (!gtenable && (pt > 3)) { // GT penalty applies
 			energy += 100000.0;
 		}
-
 		// FD: adding singlestranded stacking.
 		energy += singleStrandedStacking(sequences[loop], sidelen[loop]);
 		// FD: initialization of branch migration penalty.

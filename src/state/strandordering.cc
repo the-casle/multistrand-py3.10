@@ -16,6 +16,7 @@
 #include <iostream>
 #include <utility.h>
 
+
 using std::cout;
 
 orderingList::orderingList(int insize, int n_id, char *inTag, char *inSeq, char *inCodeSeq, char* inStruct) {
@@ -416,10 +417,11 @@ void StrandOrdering::generateFlatSequence(char **sequence, char **structure, cha
 	}
 
 	totallength += count;
+	fprintf(stderr, "totallength: %i count: %i\n", totallength, count);
 
-	*sequence = new char[totallength + 1];
-	*structure = new char[totallength + 1];
-	*code_sequence = new char[totallength + 1];
+	*sequence = new char[totallength];
+	*structure = new char[totallength];
+	*code_sequence = new char[totallength];
 
 	for (index = 0, cpos = 0, traverse = first; index < count; index++, traverse = traverse->next) {
 		strncpy(&((*sequence)[cpos]), traverse->thisSeq, traverse->size);
@@ -449,8 +451,10 @@ char* StrandOrdering::convertIndex(int index) {
 	orderingList *traverse;
 
 	for (cpos = 0, cstrand = 0, traverse = first; cstrand < count; cstrand++, traverse = traverse->next) {
-
+		fprintf(stderr, "index: %i cpos: %i, size: %i\n", index, cpos, traverse->size);
 		if (index < cpos + traverse->size) { // index is into the current strand
+			//assert(index - cpos >= 0);
+			fprintf(stderr, "found our match: %i\n", traverse->thisCodeSeq[index - cpos]);
 			return &traverse->thisCodeSeq[index - cpos];
 		}
 
@@ -618,7 +622,6 @@ void StrandOrdering::addOpenLoop(OpenLoop *newLoop, int index) {
 				{
 			assert(traverse->thisLoop == NULL);
 			traverse->thisLoop = newLoop;
-
 			return; // loop terminates once association occurs, function complete.
 		} else if (index == cpos + traverse->size)
 			; //fprintf(stderr, "Strandordering.cc, convertIndex: indexed into a strand break.\n");

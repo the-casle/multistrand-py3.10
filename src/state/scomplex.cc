@@ -330,6 +330,8 @@ int StrandComplex::generateLoops(void)
 	newstruc = (char *)new char[strlen(sequence) + 1];
 	newseq = (char *)new char[strlen(sequence) + 1];
 
+	fprintf(stderr, "charseq: %s, struct: %s, seq: %i\n", charsequence, structure, sequence[0]);
+
 	stacklist = new struct intlist;
 	stacklist->data = -1;
 	stacklist->seqlen = 0;
@@ -501,12 +503,16 @@ int StrandComplex::generateLoops(void)
 			// listlength is at least one.
 			OL_sidelengths = (int *)new int[listlength + 1];
 			OL_sequences = (char **)new char *[listlength + 1];
+
 			// deletion for these is handled in the OpenLoop destructor.
 			temp_intlist = templist;
 
 			if (listlength == 1)
 			{
+				fprintf(stderr, "stacklist: %p\n", stacklist);
+				fprintf(stderr, "OLFLAG: %i\n", olflag);
 				OL_sequences[0] = ordering->convertIndex(olflag); // CHANGED 01/06
+				fprintf(stderr, "sequence pointer: %c\n", *OL_sequences[0]);
 				// removed +1 in index to hopefully fix the offset problems with open loops. This may require olflag to always be the last _ before the open loop, but that seems acceptable.
 				OL_sidelengths[0] = seqlen - (olflag - stacklist->data - 1);
 				OL_sequences[1] = ordering->convertIndex(stacklist->data);
@@ -579,7 +585,7 @@ int StrandComplex::generateLoops(void)
 		{
 			int *OL_sidelengths;
 			char **OL_sequences;
-
+			fprintf(stderr, "traverse: %i\n", traverse);
 			if (listlength != 0)
 			{
 
@@ -594,15 +600,18 @@ int StrandComplex::generateLoops(void)
 				 ... the problem appears to be that we need this for non open
 				 loops, but for open loops it doesn't make any sense. */
 				// Possibly a problem here, need to make sure sequences get paired correctly with lengths. FIXME
+				fprintf(stderr, "stacklist data: %i seqlen: %i listllen: %i\n", stacklist->data, seqlen, listlength);
 				OL_sequences[0] = ordering->convertIndex(stacklist->data);
 				OL_sidelengths[listlength] = seqlen;
 				for (loop = 0; loop < listlength; loop++, temp_intlist = temp_intlist->next)
 				{
 					OL_sidelengths[loop] = temp_intlist->seqlen;
+					fprintf(stderr, "tmp seqlen: %i\n", temp_intlist->seqlen);
 					OL_sequences[loop + 1] = ordering->convertIndex(pairlist[temp_intlist->data]);
 				}
-
+				
 				newLoop = new OpenLoop(listlength, OL_sidelengths, OL_sequences);
+				//exit(1);
 				ordering->addOpenLoop((OpenLoop *)newLoop, stacklist->data);
 			}
 			else
@@ -611,7 +620,7 @@ int StrandComplex::generateLoops(void)
 				OL_sidelengths = (int *)new int[listlength + 1];
 				OL_sequences = (char **)new char *[listlength + 1];
 				OL_sidelengths[0] = seqlen;
-				OL_sequences[0] = ordering->convertIndex(-1);
+				OL_sequences[0] = ordering->convertIndex(-1); // this feels very dangerous (need to think about it more)
 				newLoop = new OpenLoop(0, OL_sidelengths, OL_sequences); // open chain
 				ordering->addOpenLoop((OpenLoop *)newLoop, -1);
 			}
@@ -706,6 +715,7 @@ int StrandComplex::generateLoops(void)
 		templist = stacklist;
 		stacklist = stacklist->next;
 		templist->next = NULL;
+		fprintf(stderr, "stack addr: %p temp addr: %p\n", stacklist, templist);
 		delete templist;
 
 		// newLoop = NULL;   // uncomment this when all forks are implemented.

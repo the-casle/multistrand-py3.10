@@ -272,7 +272,7 @@ void PSimOptions::generateComplexes(PyObject *alternate_start, long current_seed
 			Py_DECREF(py_struc);
 
 		}
-		Py_DECREF(py_start_state);
+		//Py_DECREF(py_start_state);
 
 		// Update the current seed and store the starting structures
 		//   note: only if we actually have a system_options, e.g. no alternate start
