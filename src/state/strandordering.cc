@@ -417,7 +417,6 @@ void StrandOrdering::generateFlatSequence(char **sequence, char **structure, cha
 	}
 
 	totallength += count;
-	fprintf(stderr, "totallength: %i count: %i\n", totallength, count);
 
 	*sequence = new char[totallength];
 	*structure = new char[totallength];
@@ -451,10 +450,7 @@ char* StrandOrdering::convertIndex(int index) {
 	orderingList *traverse;
 
 	for (cpos = 0, cstrand = 0, traverse = first; cstrand < count; cstrand++, traverse = traverse->next) {
-		fprintf(stderr, "index: %i cpos: %i, size: %i\n", index, cpos, traverse->size);
 		if (index < cpos + traverse->size) { // index is into the current strand
-			//assert(index - cpos >= 0);
-			fprintf(stderr, "found our match: %i\n", traverse->thisCodeSeq[index - cpos]);
 			return &traverse->thisCodeSeq[index - cpos];
 		}
 
