@@ -40,6 +40,10 @@ PYTHON_DEBUG_NAMES := python-debug
 PYTHON_COMMAND = $(call find_executable,$(PYTHON_NAMES))
 PYTHON_DEBUG_COMMAND = $(call find_executable,$(PYTHON_DEBUG_NAMES) $(PYTHON_NAMES))
 
+# Build dirs
+DBGDIR = debug
+RELDIR = release
+
 ifeq ($(PYTHON_COMMAND),)
 $(error Could not find any python executable in your PATH.)
 endif
@@ -88,11 +92,17 @@ distclean: package-clean clean
 	-rmdir obj/
 
 # Package build targets
+debug-install:
+	$(PYTHON_COMMAND) -m build -w -o ./$(DBGDIR)/dist -C--debug ./
+	$(PYTHON_COMMAND) -m pip install ./$(DBGDIR)
+release:
+	$(PYTHON_COMMAND) -m build -w -o ./$(RELDIR)/dist ./
+
 package:
 	@echo Building the 'multistrand' Python package.
 	@if [ -d obj/package_debug/ ]; then $(MAKE) package-debug-clean; fi
 	@if [ -d obj/package_profiler/ ]; then $(MAKE) package-profiler-clean; fi
-	$(PYTHON_COMMAND) -m build -w -o ./dist -C--debug ./
+	$(MAKE) release
 	@echo Multistrand is now built. Run 'sudo make install' to install Multistrand to your Python site packages.
 
 #documentation
@@ -102,7 +112,7 @@ docs:
 #install
 install:
 	@echo Installing the 'multistrand' Python package to your python site-packages.
-	$(PYTHON_COMMAND) -m pip install ./
+	$(PYTHON_COMMAND) -m pip install ./$(RELDIR)
 
 
 # utilities targets

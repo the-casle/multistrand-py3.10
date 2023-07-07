@@ -3,7 +3,9 @@
 # Frits Dannenberg (fdann@dna.caltech.edu)
 
 from setuptools import Extension, setup
-
+from distutils.command.build_ext import build_ext as _build_ext
+import distutils.errors
+import sys
 
 sources = ["src/system/utility.cc",
            "src/system/sequtil.cc",
@@ -25,15 +27,34 @@ sources = ["src/system/utility.cc",
            "src/state/strandordering.cc"
            ]
 
+class build_ext(_build_ext):
+    user_options = _build_ext.user_options + [
+        ('debug', None, 'compile in debug mode'),
+    ]
+
+    def initialize_options(self):
+        _build_ext.initialize_options(self)
+        self.debug = None
+
+    def finalize_options(self):
+        _build_ext.finalize_options(self)
+
+        for ext in self.distribution.ext_modules:
+            if self.debug:
+                ext.extra_compile_args = ['-O0', '-w', "-std=c++11", "-g", "-Wall", "-fno-inline"]
+                ext.undef_macros = ['NDEBUG']
+
+
 
 setup(
+    cmdclass={'build_ext': build_ext},
     ext_modules=[
         Extension("multistrand.system",
                   sources=sources,
                   include_dirs=["./src/include"],
                   language="c++",
-                  undef_macros=['NDEBUG'],
-                  extra_compile_args=['-O0', '-w', "-std=c++11", "-g", "-Wall", "-fno-inline",],  # FD: adding c++11 flag
+                  undef_macros=[],
+                  extra_compile_args=['-O3', '-w', "-std=c++11", "-DNDEBUG"],  # FD: adding c++11 flag
                   ),
     ]
 )

@@ -597,7 +597,7 @@ int StrandComplex::generateLoops(void)
 
 				// Jake: Starting point on an open loop is -1. We don't actually read the first value of the
 				// sequence but it's still so dangerous to be doing this. Need to figure out a fix
-				
+
 				OL_sequences[0] = ordering->convertIndex(stacklist->data);
 				OL_sidelengths[listlength] = seqlen;
 				for (loop = 0; loop < listlength; loop++, temp_intlist = temp_intlist->next)
