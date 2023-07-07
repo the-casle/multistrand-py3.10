@@ -112,7 +112,7 @@ docs:
 #install
 install:
 	@echo Installing the 'multistrand' Python package to your python site-packages.
-	$(PYTHON_COMMAND) -m pip install ./$(RELDIR)
+	$(PYTHON_COMMAND) -m pip install ./
 
 
 # utilities targets

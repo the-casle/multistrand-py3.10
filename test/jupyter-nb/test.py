@@ -17,7 +17,7 @@ if __name__ == "__main__":
 
 
     SEQUENCE = "GTTCGGGCAAAAGCCCGAAC"
-    STRUCTURE = '..((' + 12*'.' + '))..'
+    STRUCTURE = '((((' + 12*'.' + '))))'
     c = Complex( strands=[Strand(name="hairpin", sequence=SEQUENCE)], structure= STRUCTURE )
     b = [c]
     em = energy( b, o, Complex_Energy)  # should be -1.1449...
