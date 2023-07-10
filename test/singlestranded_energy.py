@@ -15,6 +15,7 @@ class EnergyComparison(unittest.TestCase):
     
     def setUp(self):
         self.o = Options()
+        self.o.DNA23Metropolis()
         initialize_energy_model(self.o)
         self.sections = {}
         self.sectionname = None
@@ -58,8 +59,8 @@ class EnergyComparison(unittest.TestCase):
         self.sections[self.sectionname].append((nupack_energy == multistrand_energy, nupack_energy, multistrand_energy, sequence, structure))
         
     def nupack_ene(self, sequence, structure):
-        
-        result = nupack.energy([sequence], structure, material='dna')        
+        model1 = nupack.Model(material='dna', ensemble="some-nupack3")
+        result = nupack.energy([sequence], structure, model=model1)
         return round(result, 2)
 
     def multistrand_ene(self, SEQUENCE, STRUCTURE):
@@ -69,5 +70,7 @@ class EnergyComparison(unittest.TestCase):
 
         myE = energy([c], self.o, Complex_Energy)  
         return round(myE[0], 2)
-        
 
+
+if __name__ == '__main__':
+    unittest.main()

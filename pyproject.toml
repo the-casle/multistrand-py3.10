@@ -33,7 +33,7 @@ dependencies = [
 "Homepage" = "http://www.multistrand.org"
 
 [tool.setuptools]
-packages = ["multistrand", "multistrand._options", "multistrand._objects", "tutorials.compute"
+packages = ["multistrand", "multistrand._options", "multistrand._objects"
 ]
 
 package-dir={"multistrand" = "src/interface"}
