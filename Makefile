@@ -81,9 +81,7 @@ clean: package-clean
 
 package-clean:
 	@echo Cleaning up old object files, shared libraries.
-	$(PYTHON_COMMAND) setup.py clean -b ./ -t obj/package/ --build-lib ./
-	-rm -rf multistrand/
-	# Do not use --all here! This could delete your distribution.
+	-rm -rf build
 
 distclean: package-clean clean
 	@echo Removing object file directories.
@@ -91,18 +89,10 @@ distclean: package-clean clean
 	-rmdir obj/package/
 	-rmdir obj/
 
-# Package build targets
-debug-install:
-	$(PYTHON_COMMAND) -m build -w -o ./$(DBGDIR)/dist -C--debug ./
-	$(PYTHON_COMMAND) -m pip install ./$(DBGDIR)
-release:
-	$(PYTHON_COMMAND) -m build -w -o ./$(RELDIR)/dist ./
-
 package:
 	@echo Building the 'multistrand' Python package.
-	@if [ -d obj/package_debug/ ]; then $(MAKE) package-debug-clean; fi
-	@if [ -d obj/package_profiler/ ]; then $(MAKE) package-profiler-clean; fi
-	$(MAKE) release
+#	@if [ -d build/ ]; then $(MAKE) package-clean; fi
+	$(PYTHON_COMMAND) -m build -w -o ./dist ./
 	@echo Multistrand is now built. Run 'sudo make install' to install Multistrand to your Python site packages.
 
 #documentation
