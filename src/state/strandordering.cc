@@ -420,9 +420,9 @@ void StrandOrdering::generateFlatSequence(char **sequence, char **structure, cha
 
 	totallength += count;
 
-	*sequence = new char[totallength + 1];
-	*structure = new char[totallength + 1];
-	*code_sequence = new char[totallength + 1];
+	*sequence = new char[totallength];
+	*structure = new char[totallength];
+	*code_sequence = new char[totallength];
 
 	for (index = 0, cpos = 0, traverse = first; index < count; index++, traverse = traverse->next) {
 		strncpy(&((*sequence)[cpos]), traverse->thisSeq, traverse->size);
