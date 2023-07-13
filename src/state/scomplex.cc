@@ -596,7 +596,8 @@ int StrandComplex::generateLoops(void)
 				// Possibly a problem here, need to make sure sequences get paired correctly with lengths. FIXME
 
 				// Jake: Starting point on an open loop is -1. We don't actually read the first value of the
-				// sequence but it's still so dangerous to be doing this. Need to figure out a fix
+				// sequence but it's still so dangerous to be doing this. I added a "wrapper" array so that if that
+				// -1 is ever indexed it won't cause memory issues.
 
 				OL_sequences[0] = ordering->convertIndex(stacklist->data);
 				OL_sidelengths[listlength] = seqlen;
@@ -724,6 +725,8 @@ int StrandComplex::generateLoops(void)
 		delete[] structure;
 	if (charsequence != NULL)
 		delete[] charsequence;
+
+	return 0;
 }
 
 void StrandComplex::printAllMoves(void)

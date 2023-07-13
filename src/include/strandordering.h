@@ -21,7 +21,7 @@ public:
 	orderingList(int insize, int in_id, char *inTag, char *inSeq, char *inCodeSeq, char* inStruct);
 	~orderingList(void);
 	orderingList *next, *prev;
-	char *thisTag, *thisSeq, *thisCodeSeq, *thisStruct;
+	char *thisTag, *thisSeq, *thisCodeSeq, *codeSeqForOpenLoop, *thisStruct;
 	OpenLoop *thisLoop; // corresponds to the OpenLoop to the 'left' of this strand
 	int size;
 	int uid;

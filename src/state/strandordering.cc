@@ -26,7 +26,8 @@ orderingList::orderingList(int insize, int n_id, char *inTag, char *inSeq, char 
 	// ???
 	thisTag = new char[strlen(inTag) + 1];
 	thisSeq = new char[size + 1];
-	thisCodeSeq = new char[size + 1];
+	codeSeqForOpenLoop = new char[size + 2];
+	thisCodeSeq = &codeSeqForOpenLoop[1]; // open loop shenanigans
 	thisStruct = new char[size + 1];
 
 	assert(thisTag != NULL);
@@ -41,6 +42,7 @@ orderingList::orderingList(int insize, int n_id, char *inTag, char *inSeq, char 
 	thisSeq[size] = '\0';
 	thisCodeSeq[size] = '\0';
 	thisStruct[size] = '\0';
+	codeSeqForOpenLoop[0] = '\0';
 
 	next = prev = NULL;
 	thisLoop = NULL;
@@ -52,8 +54,8 @@ orderingList::~orderingList(void) {
 		delete[] thisTag;
 	if (thisSeq != NULL)
 		delete[] thisSeq;
-	if (thisCodeSeq != NULL)
-		delete[] thisCodeSeq;
+	if (codeSeqForOpenLoop != NULL)
+		delete[] codeSeqForOpenLoop;
 	if (thisStruct != NULL)
 		delete[] thisStruct;
 	next = prev = NULL;
@@ -418,9 +420,9 @@ void StrandOrdering::generateFlatSequence(char **sequence, char **structure, cha
 
 	totallength += count;
 
-	*sequence = new char[totallength];
-	*structure = new char[totallength];
-	*code_sequence = new char[totallength];
+	*sequence = new char[totallength + 1];
+	*structure = new char[totallength + 1];
+	*code_sequence = new char[totallength + 1];
 
 	for (index = 0, cpos = 0, traverse = first; index < count; index++, traverse = traverse->next) {
 		strncpy(&((*sequence)[cpos]), traverse->thisSeq, traverse->size);
@@ -457,7 +459,7 @@ char* StrandOrdering::convertIndex(int index) {
 		cpos += traverse->size + 1;
 	}
 
-	fprintf(stderr, "strandordering.cc, convertIndex: index out of bounds.\n");
+	fprintf(stderr, "strandordering.cc, convertIndex: index: %i out of bounds.\n", index);
 	return NULL;
 }
 

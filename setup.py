@@ -33,9 +33,10 @@ setup(
                   sources=sources,
                   include_dirs=["./src/include"],
                   language="c++",
-                  undef_macros=[],
-                  extra_compile_args=['-O0', '-w', "-std=c++11", "-g", "-Wall", "-fno-inline"],
+                  undef_macros=["NDEBUG"],
+                  extra_compile_args=['-O3', '-w', "-std=c++11", "-g", "-Wall", "-fno-inline"],
                   ),
     ]
 )
 # ['-O3', '-w', "-std=c++11", "-DNDEBUG"]
+# ['-O0', '-w', "-std=c++11", "-g", "-Wall", "-fno-inline"]
