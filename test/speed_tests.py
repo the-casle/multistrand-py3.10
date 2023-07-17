@@ -25,7 +25,7 @@ class Speedtest_Random_Sequences( unittest.TestCase ):
         f = open('test_sequences.txt')
         self.sequences = [i.strip('\n') for i in f.readlines()]
         self.indexed_sequences = {}
-        for i in self.sequences:
+        for i in self.sequences:g
             print(i)
             if hasattr( self.indexed_sequences, str(len(i)) ):
                 self.indexed_sequences[len(i)].append(i)

@@ -19,6 +19,8 @@ class EnergyComparison(unittest.TestCase):
         initialize_energy_model(self.o)
         self.sections = {}
         self.sectionname = None
+
+        self.numodel = nupack.Model(material='dna', ensemble="some-nupack3")
     
     
     def test_single_stranded(self):
@@ -59,8 +61,8 @@ class EnergyComparison(unittest.TestCase):
         self.sections[self.sectionname].append((nupack_energy == multistrand_energy, nupack_energy, multistrand_energy, sequence, structure))
         
     def nupack_ene(self, sequence, structure):
-        model1 = nupack.Model(material='dna', ensemble="some-nupack3")
-        result = nupack.energy([sequence], structure, model=model1)
+
+        result = nupack.energy([sequence], structure, model=self.numodel)
         return round(result, 2)
 
     def multistrand_ene(self, SEQUENCE, STRUCTURE):
