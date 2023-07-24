@@ -137,7 +137,6 @@ protected:
 
 };
 
-
 class PSimOptions: public SimOptions {
 public:
 	//constructors
