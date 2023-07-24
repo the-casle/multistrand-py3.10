@@ -43,7 +43,7 @@ StrandComplex::StrandComplex(char *seq, char *struc)
 	delete[] tempcseq;
 }
 
-StrandComplex::StrandComplex(char *seq, char *struc, class identList *id_list)
+StrandComplex::StrandComplex(char *seq, char *struc, class identList *id_list, bool debug)
 {
 
 	char *tempseq = (char *)new char[strlen(seq) + 1];
@@ -55,6 +55,15 @@ StrandComplex::StrandComplex(char *seq, char *struc, class identList *id_list)
 	for (int loop = 0; loop < strlen(tempcseq); loop++)
 	{
 		tempcseq[loop] = baseLookup(tempcseq[loop]);
+	}
+
+	if (debug) {
+		cout << "StrandComplex:" << endl;
+		printf(" seq='%s', cseq='", tempseq);
+		for (int i = 0; i < strlen(tempcseq); i++)
+			cout << (int) tempcseq[i] << ",";
+		printf(" struct='%s'\n", tempstruct);
+		cout << flush;
 	}
 
 	beginLoop = NULL;
@@ -120,16 +129,10 @@ int StrandComplex::checkIDBound(char *id)
 	return ordering->checkIDBound(id);
 }
 
-StrandComplex *StrandComplex::performComplexJoin(JoinCriteria crit, bool useArr)
+StrandComplex *StrandComplex::performComplexJoin(JoinCriteria crit, bool useArr, bool debug)
 {
-
-	// FD 2016 Nov 14: Adjusting this to ignore the exterior nucleotides if useArr= TRUE;
-	// FD 2016 Dec 15: This comment is no longer applicable (full model now implemented)
-
-	if (utility::debugTraces)
-	{
+	if (debug)
 		cout << "Perform Complex Join 1/3 ***************" << std::endl;
-	}
 
 	StrandComplex **complexes = crit.complexes;
 	char *types = crit.types;
@@ -140,10 +143,8 @@ StrandComplex *StrandComplex::performComplexJoin(JoinCriteria crit, bool useArr)
 	StrandOrdering *new_ordering = NULL;
 	char *locations[2] = {NULL, NULL};
 
-	if (utility::debugTraces)
-	{
+	if (debug)
 		cout << "Perform Complex Join 2/3 ***************" << std::endl;
-	}
 
 	// find the affected loops, and update indexes to be into those loops.
 	loops[0] = complexes[0]->ordering->getIndex(crit, 0, &locations[0], useArr);
@@ -153,10 +154,8 @@ StrandComplex *StrandComplex::performComplexJoin(JoinCriteria crit, bool useArr)
 	complexes[0]->ordering->reorder(loops[0]);
 	complexes[1]->ordering->reorder(loops[1]);
 
-	if (utility::debugTraces)
-	{
+	if (debug)
 		cout << "Perform Complex Join 3/3 ***************" << std::endl;
-	}
 
 	// Join the strand orderings.
 	new_ordering = StrandOrdering::joinOrdering(complexes[0]->ordering, complexes[1]->ordering);
@@ -185,7 +184,7 @@ StrandComplex *StrandComplex::performComplexJoin(JoinCriteria crit, bool useArr)
 	return complexes[1];
 }
 
-StrandComplex *StrandComplex::doChoice(Move *move, SimTimer &timer)
+StrandComplex *StrandComplex::doChoice(Move *move, SimTimer &timer, bool debug)
 {
 	// TODO: fix for two affected loops being deleted, must get a 'good' starting loop for the complex still.
 	Loop *temp = NULL, *temp2 = NULL, *temp3 = NULL;
@@ -194,7 +193,7 @@ StrandComplex *StrandComplex::doChoice(Move *move, SimTimer &timer)
 	temp2 = move->affected[0];
 	temp3 = move->affected[1];
 
-	if (utility::debugTraces)
+	if (debug)
 	{
 
 		cout << "Triggering move: " << endl;
@@ -233,10 +232,8 @@ StrandComplex *StrandComplex::doChoice(Move *move, SimTimer &timer)
 		newOrdering = ordering->breakOrdering(temp2, temp3, newLoop[0], newLoop[1]);
 		beginLoop = ordering->getLoop();
 
-		if (utility::debugTraces)
-		{
+		if (debug)
 			cout << "Going to break the complex!! 3/3 ********************** " << std::endl;
-		}
 
 		return (new StrandComplex(newOrdering)); // newComplex
 	}
@@ -295,42 +292,49 @@ StrandComplex *StrandComplex::doChoice(Move *move, SimTimer &timer)
 }
 
 // used by generateLoops to handle loop traversals well.
-struct intlist
-{
+struct generateLoopsData {
 	int data;
 	int seqlen;
-	Loop *predec;
-	struct intlist *next;
+	Loop *predec = NULL;
+	struct generateLoopsData *next = NULL;
 };
 
 // ZIFNAB NEEDS CHANGE FOR SEQUENCE?STRUCTURE
-int StrandComplex::generateLoops(void)
+int StrandComplex::generateLoops(bool debug)
 {
 
-	int *pairlist;
-	char *newstruc;
-	char *newseq;
-
-	int loop, loop2, startpos, traverse, listlength, seqlen;
+	int startpos, traverse, listlength, seqlen;
 	int olflag = -1; // set to non -1 for internal open loops.
 	int olseqlen = 0;
 	int openloopcount; // used to track the offset for setting up adjacencies in the open loop.
 	int depth = 0;
-	struct intlist *stacklist, *stacklisttail, *templist = NULL, *templisttail = NULL, *temp_intlist;
+	generateLoopsData *stacklist, *stacklisttail, *temp_intlist;
+	generateLoopsData *templist = NULL, *templisttail = NULL;
 	Loop *newLoop;
 	char *sequence, *structure, *charsequence;
+
+	if (debug)
+		cout << "Generating flat sequences." << endl << flush;
 
 	// ZIFNAB: begin work here 8/2.
 	// ZIFNAB: done, completed change to convertIndex notation.
 	// ZIFNAB: more work 8/22: sequence, charsequence are used oddly, which one is actually the character sequence? do loops get the character sequence or the code sequence pointer?
 	// ZIFNAB: completed: sequence is the code sequence, which has translated A/G/C/T but non translated special characters. get index should be returning into the code sequence.
-	ordering->generateFlatSequence(&charsequence, &structure, &sequence);
+	ordering->generateFlatSequence(&charsequence, &structure, &sequence, debug);
 
-	pairlist = (int *)new int[strlen(sequence) + 1];
-	newstruc = (char *)new char[strlen(sequence) + 1];
-	newseq = (char *)new char[strlen(sequence) + 1];
+	if (debug) {
+		printf(" Generating loops for: cseq='%s', seq='", charsequence);
+		for (int loop = 0; loop < strlen(sequence); loop++)
+			cout << (int) sequence[loop] << ",";
+		printf(" struct='%s'\n", structure);
+		cout << " strlen(sequence) = " << strlen(sequence) << endl << flush;
+	}
 
-	stacklist = new struct intlist;
+	int *pairlist = (int *) new int[strlen(sequence) + 1];
+	char *newstruc = (char *) new char[strlen(sequence) + 1];
+	char *newseq = (char *) new char[strlen(sequence) + 1];
+
+	stacklist = new generateLoopsData;
 	stacklist->data = -1;
 	stacklist->seqlen = 0;
 	stacklist->predec = NULL;
@@ -339,18 +343,14 @@ int StrandComplex::generateLoops(void)
 
 	strcpy(newstruc, structure);
 
-	for (loop = 0; loop < strlen(sequence); loop++)
-	{
+	for (int loop = 0; loop < strlen(sequence); loop++) {
 		newseq[loop] = baseLookup(charsequence[loop]);
 		pairlist[loop] = -1;
 		if (structure[loop] == '(')
 			depth++;
-		else if (structure[loop] == ')')
-		{
-			for (loop2 = loop; loop2 >= 0; loop2--)
-			{
-				if (newstruc[loop2] == '(')
-				{
+		else if (structure[loop] == ')') {
+			for (int loop2 = loop; loop2 >= 0; loop2--) {
+				if (newstruc[loop2] == '(') {
 					newstruc[loop2] = '.';
 					newstruc[loop] = '.';
 					pairlist[loop] = loop2;
@@ -362,10 +362,22 @@ int StrandComplex::generateLoops(void)
 		}
 	}
 
-	if (depth != 0)
-	{
+	if (depth != 0) {
 		printf("Mismatched Parens in Start Structure.");
 		return -1;
+	}
+
+	if (debug) {
+		cout << " pairlist='";
+		for (int loop = 0; loop < (strlen(sequence) + 1); loop++)
+			cout << pairlist[loop] << ",";
+		cout << "'" << endl << " newstruc='";
+		for (int loop = 0; loop < (strlen(sequence) + 1); loop++)
+			cout << newstruc[loop];
+		cout << "'" << endl << " newseq=";
+		for (int loop = 0; loop < (strlen(sequence) + 1); loop++)
+			cout << (int) newseq[loop] << ",";
+		cout << "'" << endl << flush;
 	}
 
 	/* Algorithm which the following while loop implements:
@@ -393,16 +405,15 @@ int StrandComplex::generateLoops(void)
 		seqlen = 0;
 		startpos = stacklist->data;
 
-		if (startpos != -1)
-		{
-			if (pairlist[startpos] != -1)
-			{
+		if (startpos != -1) {
 
-				if (pairlist[startpos + 1] != -1) // there was an immediate connection after the starting position. Stack or bulge, typically.
-				{
+			if (pairlist[startpos] != -1) {
+
+				if (pairlist[startpos + 1] != -1) { // there was an immediate connection after the starting position. Stack or bulge, typically.
+
 					traverse = pairlist[startpos + 1] + 1; // add one otherwise we take the same link backwards when the while loops starts.
 					startpos = startpos + 1;
-					templist = (struct intlist *)new struct intlist;
+					templist = new struct generateLoopsData;
 					templisttail = templist;
 					templist->data = startpos;
 					templist->seqlen = 0;
@@ -410,24 +421,26 @@ int StrandComplex::generateLoops(void)
 					templist->next = NULL;
 					// CHECK to make sure startpos+1 is the right index. FIXME 5/26
 					listlength++;
-				}
-				else // we have unpaired bases after the initiating branch
-				{
+
+				} else { // we have unpaired bases after the initiating branch
+
 					traverse = startpos + 2;
 					startpos++;
 					seqlen++;
 				}
-			}
-			else
-			{
+
+			} else {
+
 				traverse = startpos + 1;
 				seqlen++;
 			}
-		}
-		else // startpos == -1
-		{
+
+		} else { // startpos == -1
+
 			traverse = startpos + 1;
+
 		}
+
 		if (startpos >= 0)
 			if (sequence[startpos] == '_' || sequence[startpos] == '+')
 			{
@@ -457,24 +470,17 @@ int StrandComplex::generateLoops(void)
 			if (pairlist[traverse] != -1)
 			{
 				if (pairlist[traverse] + 1 != startpos) // make sure this is not the initial pairing
-				{
-					if (templisttail == NULL)
-					{
-						templist = (struct intlist *)new struct intlist;
+                {
+					if (templisttail == NULL) {
+						templist = new struct generateLoopsData;
 						templisttail = templist;
 						templist->data = traverse;
 						templist->seqlen = seqlen;
-						templist->predec = NULL;
-						templist->next = NULL;
 						seqlen = 0;
-					}
-					else
-					{
-						templisttail->next = (struct intlist *)new struct intlist;
+					} else {
+						templisttail->next = new struct generateLoopsData;
 						templisttail->next->data = traverse;
 						templisttail->next->seqlen = seqlen;
-						templisttail->next->predec = NULL;
-						templisttail->next->next = NULL;
 						seqlen = 0;
 						templisttail = templisttail->next;
 					}
@@ -492,8 +498,8 @@ int StrandComplex::generateLoops(void)
 		// JS: classification of loop type time.
 		// classification should end up with a pointer to the new loop, newLoop.
 
-		if (olflag != -1) // 'internal' open loop
-		{
+		if (olflag != -1) {			// 'internal' open loop
+
 			int *OL_sidelengths;
 			char **OL_sequences;
 
@@ -526,24 +532,20 @@ int StrandComplex::generateLoops(void)
 				 //    adjacent to the nick.
 			{
 				temp_intlist = templist;
-				for (loop = 0; loop < listlength - 1; loop++, temp_intlist = temp_intlist->next)
-				{
-					if (temp_intlist->data > olflag)
-					{		   // this data item is after the nick.
+				for (int loop = 0; loop < listlength - 1; loop++, temp_intlist = temp_intlist->next) {
+					if (temp_intlist->data > olflag) { // this data item is after the nick.
 						break; // cause this loop to end.
 					}
 					// temp_intlist will then be the first pairing after the nick.
 				}
 
-				OL_sequences[0] = ordering->convertIndex(olflag);
+				OL_sequences[0] = ordering->convertIndex(olflag); // label a
 				if (temp_intlist == NULL)
 					OL_sidelengths[0] = seqlen - olseqlen;
 				else
 					OL_sidelengths[0] = temp_intlist->seqlen - olseqlen;
-				for (loop = 0; loop < listlength; loop++)
-				{
-					if (temp_intlist == NULL)
-					{
+				for (int loop = 0; loop < listlength; loop++) {
+					if (temp_intlist == NULL) {
 						temp_intlist = templist;
 						openloopcount = -openloopcount - 1;
 
@@ -601,8 +603,7 @@ int StrandComplex::generateLoops(void)
 
 				OL_sequences[0] = ordering->convertIndex(stacklist->data);
 				OL_sidelengths[listlength] = seqlen;
-				for (loop = 0; loop < listlength; loop++, temp_intlist = temp_intlist->next)
-				{
+				for (int loop = 0; loop < listlength; loop++, temp_intlist = temp_intlist->next) {
 					OL_sidelengths[loop] = temp_intlist->seqlen;
 					OL_sequences[loop + 1] = ordering->convertIndex(pairlist[temp_intlist->data]);
 				}
@@ -635,8 +636,7 @@ int StrandComplex::generateLoops(void)
 			// JS: new code for pairtypes, sidelengths, seqs for multiloop, matching sequencing correctly.
 			ML_sidelengths[0] = temp_intlist->seqlen;
 			ML_sequences[1] = ordering->convertIndex(pairlist[temp_intlist->data]);
-			for (loop = 1; loop < listlength; loop++)
-			{
+			for (int loop = 1; loop < listlength; loop++) {
 				temp_intlist = temp_intlist->next;
 				if (loop == listlength - 1)
 				{
@@ -670,11 +670,11 @@ int StrandComplex::generateLoops(void)
 		// this must be after stackloop, otherwise it may catch stackloop's conditions.
 		{
 			newLoop = new BulgeLoop(templist->seqlen, seqlen, ordering->convertIndex(startpos - 1), ordering->convertIndex(pairlist[templist->data]), NULL,
-									NULL);
-		}
-		else if (1) // Error-generating Loop
-		{
+                                    NULL);
+		} else {
 			// This should never happen.
+			printf("StrandComplex::generateLoops() - Invalid loop!");
+			throw std::bad_alloc();
 		}
 
 		// add correct predecessor to all adjacent loops.
@@ -714,11 +714,12 @@ int StrandComplex::generateLoops(void)
 		templist->next = NULL;
 		delete templist;
 
-		// newLoop = NULL;   // uncomment this when all forks are implemented.
+		newLoop = NULL;   // uncomment this when all forks are implemented.
 	}
 	delete[] pairlist;
 	delete[] newstruc;
 	delete[] newseq;
+
 	if (sequence != NULL)
 		delete[] sequence;
 	if (structure != NULL)
@@ -794,8 +795,7 @@ string &StrandComplex::getStructure(void)
 	return ordering->getStructure();
 }
 
-char *StrandComplex::getStrandNames(void)
-{
+char *StrandComplex::getStrandNames(void) {
 	return ordering->getStrandNames();
 }
 
@@ -827,18 +827,15 @@ BaseCount &StrandComplex::getExteriorBases(HalfContext *lowerHalf)
 
 double StrandComplex::getEnergy(void)
 {
-
 	return beginLoop->returnEnergies(NULL);
 }
 
 double StrandComplex::getEnthalpy(void)
 {
-
 	return beginLoop->returnEnthalpies(NULL);
 }
 
-void StrandComplex::generateMoves(void)
-{
+void StrandComplex::generateMoves(void) {
 	beginLoop->firstGen(NULL);
 }
 

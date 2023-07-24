@@ -162,7 +162,6 @@ def machinek2014(options, selector, trialsIn):
     
         
 def openDocument(document): 
-    
     reader = xlrd.open_workbook(document, 'rb')
     row = reader.sheet_by_index(0)
     return row            
@@ -170,7 +169,6 @@ def openDocument(document):
 
 # trials has to be the first argument.
 def genOptions(trialsIn, select):
-
     stdOptions = standardOptions(Literals.first_step, tempIn=23.0, trials=trialsIn, timeOut=100.0)
     stdOptions.sodium = expSodium(select)
     stdOptions.magnesium = expMagnesium(select)
@@ -183,14 +181,12 @@ def genOptions(trialsIn, select):
         stdOptions.DNA23Arrhenius()   
     if KINETICMETHOD == 3:
         stdOptions.JSDefault()
- 
     machinek2014(stdOptions, select, trialsIn)
     return stdOptions
 
 
 def computeRate(select):
-    
-    myMultistrand.setOptionsFactory2(genOptions, NUMOFPATHS, select) 
+    myMultistrand.setOptionsFactory2(genOptions, NUMOFPATHS, select)
     myMultistrand.setNumOfThreads(NUMOFTHREADS)
     myMultistrand.setTerminationCriteria(TERMINATIONCRIT)
     myMultistrand.setLeakMode()  # the new leak object -- faster bootstrapping.
@@ -198,8 +194,7 @@ def computeRate(select):
     
     myFSR = myMultistrand.results  
     low, high = myFSR.doBootstrap()
-    
-    return myFSR.k1(), low, high 
+    return myFSR.k1(), low, high
 
 
 def excelSelect(select):
@@ -215,7 +210,6 @@ def excelFind(row, col):
     dir = os.path.dirname(__file__)
     document = os.path.join(dir, 'data/machinek-figure2.xlsx')      
     myDoc = openDocument(document)
-    
     return myDoc.cell(row, col).value
 
 
@@ -232,8 +226,7 @@ def measuredRate(select):
 
 
 def generateGraph():
-    
-    fig , ax = plt.subplots() 
+    fig , ax = plt.subplots()
     plt.title  ("Threeway strand displacement invasion mismatch \n Machinek et al." , fontsize=18) 
     plt.ylabel (r"$\mathregular{K(M^{-1}s^{-1})}$", fontsize=19)
 
@@ -256,13 +249,10 @@ def generateGraph():
         realRates = []
 
         for select in range(12 * i + 0, 12 * i + 12):
-
             if select % 12 < 11 and DUMMYRUN:
-                 
                 rate = float(i+1) * (10 ** 5)
                 low = float(i+1) * (10 ** 4)
                 high = float(i+1) * (10 ** 6)
-             
             else:
                 rate, low, high = computeRate(select)
             
@@ -305,7 +295,6 @@ if __name__ == '__main__':
     if sys.argv[1] == "jsdefault":
         KINETICMETHOD = 3
 
-    
     TERMINATIONCRIT = int(sys.argv[2])
     NUMOFTHREADS = int(sys.argv[3])
     NUMOFPATHS = int(sys.argv[4])
@@ -313,8 +302,4 @@ if __name__ == '__main__':
     if len(sys.argv) > 5 and sys.argv[5] == "DUMMY":
         DUMMYRUN = True
         
-    
     generateGraph()
-
-
-

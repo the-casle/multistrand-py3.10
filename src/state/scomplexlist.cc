@@ -21,11 +21,6 @@
 typedef std::vector<int> intvec;
 typedef std::vector<int>::iterator intvec_it;
 
-/*
-
- SComplexListEntry Constructor/Destructor
-
- */
 
 SComplexListEntry::SComplexListEntry(StrandComplex *newComplex, int newid) {
 	thisComplex = newComplex;
@@ -49,19 +44,15 @@ SComplexListEntry::~SComplexListEntry(void) {
 
  */
 
-void SComplexListEntry::initializeComplex(void) {
+void SComplexListEntry::initializeComplex(bool debug) {
 
-	thisComplex->generateLoops();
-	if (utility::debugTraces) {
+	thisComplex->generateLoops(debug);
+	if (debug)
 		cout << "Done generating loops!" << endl;
-	}
 
 	thisComplex->generateMoves();
-
-	if (utility::debugTraces) {
+	if (debug)
 		cout << "Done generating moves!" << endl;
-	}
-
 }
 
 void SComplexListEntry::regenerateMoves(void) {
@@ -73,10 +64,6 @@ void SComplexListEntry::fillData(EnergyModel *em) {
 	energy = thisComplex->getEnergy() + (em->getVolumeEnergy() + em->getAssocEnergy()) * (thisComplex->getStrandCount() - 1);
 	rate = thisComplex->getTotalFlux();
 }
-
-/*
- SComplexListEntry::printComplex
- */
 
 string SComplexListEntry::toString(EnergyModel *em) {
 
@@ -119,11 +106,6 @@ void SComplexListEntry::dumpComplexEntryToPython(ExportData& data) {
 //                                                                   //
 ///////////////////////////////////////////////////////////////////////
 
-/* 
- SComplexList Constructor and Destructor
-
- */
-
 SComplexList::SComplexList(EnergyModel *energyModel) {
 
 	eModel = energyModel;
@@ -141,10 +123,6 @@ SComplexList::~SComplexList(void) {
 		delete first;
 }
 
-/* 
- SComplexList::addComplex( StrandComplex *newComplex );
- */
-
 SComplexListEntry *SComplexList::addComplex(StrandComplex *newComplex) {
 	if (first == NULL)
 		first = new SComplexListEntry(newComplex, idcounter);
@@ -159,27 +137,20 @@ SComplexListEntry *SComplexList::addComplex(StrandComplex *newComplex) {
 	return first;
 }
 
-/*
- SComplexList::initializeList
- */
-
 void SComplexList::initializeList(void) {
 
 	for (SComplexListEntry* temp = first; temp != NULL; temp = temp->next) {
 
-		temp->initializeComplex();
+		temp->initializeComplex(eModel->simOptions->debug);
 
-		if (utility::debugTraces) {
+		if (eModel->simOptions->debug)
 			cout << "Done initializing a complex!" << endl;
-		}
 
 		temp->fillData(eModel);
-
 	}
 
-	if (utility::debugTraces) {
+	if (eModel->simOptions->debug)
 		cout << "Done initializing List!" << endl;
-	}
 
 }
 
@@ -193,10 +164,6 @@ void SComplexList::regenerateMoves(void) {
 	}
 
 }
-
-/*
- SComplexList::getTotalFlux
- */
 
 double SComplexList::getTotalFlux(void) {
 
@@ -368,10 +335,6 @@ double SComplexList::cycleCrossRateArr(StrandOrdering* input1, StrandOrdering* i
 
 }
 
-/*
- SComplexList::getEnergy( int volume_flag )
- */
-
 double *SComplexList::getEnergy(int volume_flag) {
 
 	SComplexListEntry *temp = first;
@@ -390,10 +353,6 @@ double *SComplexList::getEnergy(int volume_flag) {
 	}
 	return energies;
 }
-
-/*
- SComplexList::printComplexList
- */
 
 void SComplexList::printComplexList() {
 	SComplexListEntry *temp = first;
@@ -420,11 +379,9 @@ double SComplexList::doBasicChoice(SimTimer& myTimer) {
 	Move *tempmove;
 	double arrType;
 
-	if (utility::debugTraces) {
-
+	if (eModel->simOptions->debug) {
 		cout << "Doing a basic choice, timer =  " << myTimer << endl;
 		cout << "joinrate = " << joinRate << endl;
-
 	}
 
 	if (myTimer.wouldBeHit(joinRate)) {
@@ -452,15 +409,15 @@ double SComplexList::doBasicChoice(SimTimer& myTimer) {
 		}
 		temp = temp->next;
 	}
-// POST: pickedComplex points to the complex that contains the executable move
-// For cotranscriptional, this is always the initial complex.
+	// POST: pickedComplex points to the complex that contains the executable move
+	// For cotranscriptional, this is always the initial complex.
 
 	assert(pickedComplex != NULL);
 
 	tempmove = pickedComplex->getChoice(myTimer);
 	arrType = tempmove->getArrType();
 
-	newComplex = pickedComplex->doChoice(tempmove, myTimer);
+	newComplex = pickedComplex->doChoice(tempmove, myTimer, eModel->simOptions->debug);
 
 	if (newComplex != NULL) {
 
@@ -489,10 +446,6 @@ double SComplexList::doBasicChoice(SimTimer& myTimer) {
 
 }
 
-/*
- SComplexList::doJoinChoice( double choice )
- */
-
 double SComplexList::doJoinChoice(SimTimer& timer) {
 
 	// this function will return the arrType move;
@@ -502,7 +455,7 @@ double SComplexList::doJoinChoice(SimTimer& timer) {
 	JoinCriteria crit;
 
 	// before we do anything, print crit (this is for debugging!)
-	if (utility::debugTraces) {
+	if (eModel->simOptions->debug) {
 		cout << "For the current state: \n";
 		cout << toString();
 	}
@@ -517,7 +470,7 @@ double SComplexList::doJoinChoice(SimTimer& timer) {
 
 	}
 
-	if (utility::debugTraces) {
+	if (eModel->simOptions->debug) {
 		cout << "Found a criteria to join: \n";
 		cout << crit.arrType;
 	}
@@ -525,12 +478,13 @@ double SComplexList::doJoinChoice(SimTimer& timer) {
 	assert(crit.complexes[0]!=NULL);
 	assert(crit.complexes[1]!=NULL);
 
-// here we actually perform the complex join, using criteria as input.
+	// here we actually perform the complex join, using criteria as input.
 
 	SComplexListEntry *temp2 = NULL;
 	StrandComplex *deleted;
 
-	deleted = StrandComplex::performComplexJoin(crit, eModel->useArrhenius());
+	deleted = StrandComplex::performComplexJoin(crit, eModel->useArrhenius(),
+												eModel->simOptions->debug);
 	for (SComplexListEntry* temp = first; temp != NULL; temp = temp->next) {
 
 		if (temp->thisComplex == crit.complexes[0]) {
@@ -709,11 +663,6 @@ JoinCriteria SComplexList::cycleForJoinChoiceArr(SimTimer& timer) {
 
 }
 
-/*
-
- bool SComplexList::checkStopComplexList( class complex_item *stoplist )
-
- */
 bool SComplexList::checkStopComplexList(class complexItem *stoplist) {
 
 	if (stoplist->type == STOPTYPE_BOUND) {
@@ -754,11 +703,6 @@ void SComplexList::updateOpenInfo(void) {
 
 }
 
-/*
-
- bool SComplexList::checkStopComplexList_Bound( class complex_item *stoplist )
-
- */
 bool SComplexList::checkStopComplexList_Bound(class complexItem *stoplist) {
 	class identList *id_traverse = stoplist->strand_ids;
 	class SComplexListEntry *entry_traverse = first;
@@ -768,10 +712,9 @@ bool SComplexList::checkStopComplexList_Bound(class complexItem *stoplist) {
 		return false;  // ERROR: can only check for a single complex/group being bound in current version.
 	}
 
-// Check for each listed strand ID, and whether it's bound.
-// Note that we iterate through each complex in the list until we
-// find one where it's bound, and then move on to the next.
-//
+	// Check for each listed strand ID, and whether it's bound.
+	// Note that we iterate through each complex in the list until we
+	// find one where it's bound, and then move on to the next.
 	while (id_traverse != NULL) {
 		entry_traverse = first;
 		k_flag = 0;
@@ -837,9 +780,9 @@ bool SComplexList::checkStopComplexList_Structure_Disassoc(class complexItem *st
 		}
 		if (!successflag)
 			return false;
-// we did not find a successful match for this stop complex in any system complex.
+		// we did not find a successful match for this stop complex in any system complex.
 
-// otherwise, we did, try checking the next stop complex.
+		// otherwise, we did, try checking the next stop complex.
 		traverse = traverse->next;
 	}
 	return true;

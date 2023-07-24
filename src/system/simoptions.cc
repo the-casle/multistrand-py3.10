@@ -78,9 +78,11 @@ PSimOptions::PSimOptions(PyObject* input) :
 
 	getLongAttr(python_settings, verbosity, &verbosity);
 	getBoolAttr(python_settings, activestatespace, &statespaceActive);
+	getBoolAttr(python_settings, reuse_energymodel, &reuseEnergyModel);
 	getDoubleAttr(python_settings, ms_version, &ms_version);
 
-	debug = false;	// this is the main switch for simOptions debug, for now.
+	// switch for debugging output
+	debug = (verbosity > 2);
 
 }
 
@@ -97,27 +99,8 @@ string SimOptions::toString() {
 	ss << "max_sim_time = " << max_sim_time << " \n";
 	ss << "seed = " << seed << " \n";
 
-//	ss << "myComplexes = { ";
-//
-//	for (int i = 0; i < myComplexes->size(); i++) {
-//
-//		ss << "{ " << myComplexes->at(i).sequence << ", " << myComplexes->at(i).structure << " }";
-//
-//	}
-//
-//	ss << "} \n";
-//
-//	ss << " myStopComplexes = { ";
-//
-//	// linked list iterator
-//	stopComplexes* myStopComplex = myStopComplexes; // copying pointer so we can iterate.
-//
-//	ss << "} \n";
-//
 	string output = ss.str();
-
 	output += energyOptions->toString();
-
 	return output;
 
 }
@@ -201,6 +184,9 @@ PyObject* PSimOptions::getPythonSettings() {
 
 void PSimOptions::generateComplexes(PyObject *alternate_start, long current_seed) {
 
+	if (debug)
+		cout << "Start generating complexes..." << endl;
+
 	myComplexes = new vector<complex_input>(0); // wipe the pointer to the previous object;
 
 	PyObject *py_start_state = NULL, *py_complex = NULL;
@@ -210,7 +196,7 @@ void PSimOptions::generateComplexes(PyObject *alternate_start, long current_seed
 	if (myComplexes->size() == 0) {
 
 		complex_input *tempcomplex = NULL;
-		char *sequence, *structure;
+		const char *sequence, *structure;
 		class identList *id;
 		int start_count;
 		PyObject *py_start_state = NULL, *py_complex = NULL;
@@ -220,18 +206,20 @@ void PSimOptions::generateComplexes(PyObject *alternate_start, long current_seed
 		if (alternate_start != NULL)
 			py_start_state = alternate_start;
 		else
-			py_start_state = getListAttr(python_settings, start_state);
+			py_start_state = getListAttrReify(python_settings, start_state);
 
-		start_count = PyList_GET_SIZE(py_start_state);
-		// doesn't need reference counting for this size call.
-		// the getlistattr call we decref later.
+		if (py_start_state != Py_None)
+			// doesn't need reference counting for this size call.
+			// the getlistattr call we decref later.
+			start_count = PyList_GET_SIZE(py_start_state);
+		else
+			start_count = 0;
 
 		if (start_count == 0) {	// FD Jun 2018: adding throw if no initial state is set.
 			throw std::invalid_argument("Initial state was not set.");
 		}
 
 		for (int index = 0; index < start_count; index++) {
-			// #ifndef DEBUG_MACROS
 			py_complex = PyList_GET_ITEM(py_start_state, index);
 			// Borrowed reference, we do NOT decref it at end of loop.
 
@@ -239,27 +227,27 @@ void PSimOptions::generateComplexes(PyObject *alternate_start, long current_seed
 			printPyError_withLineNumber();
 #endif
 
-			sequence = getStringAttr(py_complex, sequence, py_seq);
+			sequence = getStringAttrReify(py_complex, sequence, py_seq);
 			// new reference
 
-			structure = getStringAttr(py_complex, structure, py_struc);
-
+			structure = getStringAttrReify(py_complex, structure, py_struc);
 			// new reference
-			// Need to check if an error occurred, specifically, it could be an IOError due to sample failing. If so, we need to get the heck out of dodge right now.
+			// Need to check if an error occurred, specifically, it could be an OSError due to sample failing. If so, we need to get the heck out of dodge right now.
 			py_err = PyErr_Occurred();
 			// py_err is a borrowed reference
 
-			if (py_err != NULL) { // then an error occurred while getting the structure. Test for IOError (sample failure):
-				if (PyErr_ExceptionMatches(PyExc_IOError)) {
+			if (py_err != NULL) { // then an error occurred while getting the structure. Test for OSError (sample failure):
+				if (PyErr_ExceptionMatches(PyExc_OSError)) {
 					fprintf(stderr,
 							"MULTISTRAND: Starting Structure could not be retrieved for index %d in your options object's start_state. This is likely due to Boltzmann sampling failing: please check that the program 'sample' exists and points correctly to the NUPACK sample binary. Or try 'print o.start_state[%d].structure' where 'o' is your options object and refer to that error message (if any).\n",
 							index, index);
 				} else {
 					fprintf(stderr, "MULTISTRAND: An unidentified exception occurred while trying to initialize the system.\n");
-
 				}
 				return;
 			}
+			if (debug)
+				printf("Complex %d: sequence='%s', structure='%s'\n", index, sequence, structure);
 
 			id = getID_list(python_settings, index, alternate_start);
 
@@ -272,7 +260,6 @@ void PSimOptions::generateComplexes(PyObject *alternate_start, long current_seed
 			Py_DECREF(py_struc);
 
 		}
-		//Py_DECREF(py_start_state);
 
 		// Update the current seed and store the starting structures
 		//   note: only if we actually have a system_options, e.g. no alternate start
@@ -332,89 +319,3 @@ void PSimOptions::stopResultFirstStep(long seed, double stopTime, double rate, c
 		printStatusLine_First_Bimolecular(python_settings, seed, STOPRESULT_NORMAL, stopTime, rate, message);
 	}
 }
-
-///// CSIMOPTIONS
-CSimOptions::CSimOptions(void) {
-
-	// initializers calling python object -- these can use a super object getter.
-	// Not clear at the moment if calling all settings is possible without crashing.
-	fixedRandomSeed = true;
-
-	seed = 7777;
-
-	energyOptions = new CEnergyOptions();
-
-	simulation_mode = 16;
-	simulation_count = 1000;
-	o_time = 0;
-	o_interval = 0;
-	stop_count = 1;
-	stop_options = 1;
-	max_sim_time = 0.1;
-
-	debug = false;	// this is the main switch for simOptions debug, for now.
-
-}
-
-PyObject* CSimOptions::getPythonSettings() {
-
-	cout << "getPythonSettings, cannot proceed \n";
-	abort();
-	return NULL;
-
-}
-
-void CSimOptions::generateComplexes(PyObject *alternate_start, long current_seed) {
-
-	myComplexes = new vector<complex_input>(0); // wipe the pointer to the previous object;
-
-//	// setting default value
-//	char* mySeq = "GTTAGACTCGGAGGTGGTAGCAATGGATCAG+CTGATCCATTGCTACCACCTCCGAGTCTAACCATATC+GATATGGTTAGACTCGGAGGTGGTAGCAATG";
-//	char* myStructure = ".........................((((((+))))))(((((((((((((((((((((((((((((((+)))))))))))))))))))))))))))))))";
-//	identList* myIdentity1 = new identList(1337, "myID-1", NULL);
-//	identList* myIdentity2 = new identList(1338, "myID-2", myIdentity1);
-//	identList* myIdentity3 = new identList(1339, "myID-3", myIdentity2);
-//
-//	complex_input myInput = complex_input(mySeq, myStructure, NULL);
-//
-//	myComplexes->push_back(myInput);
-
-}
-
-stopComplexes* CSimOptions::getStopComplexes(int) {
-
-	cout << "getStopComplexes, cannot proceed \n";
-	abort();
-	return NULL;
-}
-
-void CSimOptions::stopResultError(long seed) {
-
-	cout << "stopResultError, cannot send to python \n";
-
-}
-
-void CSimOptions::stopResultNan(long seed) {
-
-	cout << "stopResultNan, cannot send to python \n";
-
-}
-
-void CSimOptions::stopResultNormal(long seed, double time, char* message) {
-
-	cout << "stopResultNormal, cannot send to python \n";
-
-}
-
-void CSimOptions::stopResultTime(long seed, double time) {
-
-	cout << "stopResultTime, cannot send to python \n";
-
-}
-
-void CSimOptions::stopResultFirstStep(long seed, double stopTime, double rate, const char* message) {
-
-	cout << "stopResultBimolecular, cannot send to python \n";
-
-}
-

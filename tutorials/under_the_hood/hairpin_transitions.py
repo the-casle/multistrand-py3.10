@@ -1,4 +1,3 @@
-from __future__ import print_function
 # hairpin_transitions.py
 # 
 # Having seen how the simulation generates trajectories in hairpin_trajectories.py, here we extract some information from the trajectories.
@@ -46,7 +45,6 @@ def setup_options_hairpin():
     Returns the options object for simple hairpin example of
     transition mode in Chapter 7.3 of Schaeffer's PhD thesis.
     """
-
     # Once domains are defined, strands can be built from them using "+".
     stem = Domain(name="stem",sequence="GCATGC",length=6)
     hp = Domain(name="hairpin", sequence="AAAA",length=4)
@@ -84,7 +82,6 @@ def setup_options_hairpin():
     o_loose.stop_conditions = [initial_sc, pathway_end_loose_sc, pathway_hp_loose_sc,full_sc]
 
     # change verbosity to 1, above, and you'll see a print-out during the simulation runs, every time a stop state is reached.
-
     return o_exact,o_loose
 
 #### Some helper code follows.
@@ -98,6 +95,7 @@ def setup_options_hairpin():
 # mol will be a list of True/False for which transition macrostates the system has entered,
 # so in_state(mol) returns True if the system is in at least one of the listed macrostates.
 def in_state( mol ): return sum(mol) > 0
+
 
 # mol is a Boolean descriptor of macrostate occupancy, like mol above.
 # a short-hand name for this macrostate (based on the order given in stop_conditions) is provided.
@@ -115,10 +113,12 @@ def mol_name(mol):
 def trans_name(t0,t1):
     return mol_name(t0) + ' -> ' + mol_name(t1)
 
+
 def print_transitions( transition_traj ):
     for t in transition_traj:
         print("%12g : %s" % ( t[0], mol_name(t[1]) ))
-                  
+
+
 # for each simulation, the transition trajectory reports the tuple (time_entered, which_macrostates_the_system_is_now_in)
 def parse_transition_lists( transition_traj_list ):
     transition_dict = {}
@@ -134,26 +134,25 @@ def parse_transition_lists( transition_traj_list ):
                 transition_dict[nm].append( tt[i+1][0] - tt[i][0] )
             else:
                 transition_dict[nm] = [tt[i+1][0] - tt[i][0]]
-
     return transition_dict
+
 
 def parse_transition_list( transition_traj_list ):
     return parse_transition_lists( [transition_traj_list] )
 
     
 def print_transition_dict( transition_dict, options = None ):
-    k = transition_dict.keys()
+    k = list(transition_dict.keys())
     k.sort() 
-
     for i in k:
         transition_times = np.array( transition_dict[i] )
-        print("{0}: {2:.2e} ({1})".format(i,len(transition_dict[i]),np.mean(transition_times)))
+        print(("{0}: {2:.2e} ({1})".format(i,len(transition_dict[i]),np.mean(transition_times))))
     
     # also print the true names of the macrostates, if an Options object is provided
     charindex = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0'
     if options:
-        for i,idx in zip(options.stop_conditions,range(len(options.stop_conditions))):
-            print("{0}: {1}".format( i.tag, charindex[idx]))
+        for i,idx in zip(options.stop_conditions,list(range(len(options.stop_conditions)))):
+            print(("{0}: {1}".format( i.tag, charindex[idx])))
 
 
 #### Back to stuff to try... automatically or by hand, line-by-line 

@@ -1,4 +1,3 @@
-from __future__ import absolute_import
 from .strand import Strand
 from functools import reduce
 
@@ -98,11 +97,12 @@ class Complex(object):
                         error_msg += " Could not parse the dot-paren structure. Expected string composed of ()+."
                 raise ValueError(error_msg)
             else:
-                matched_list = zip(structure,
-                                    reduce(lambda x, y: x + [d.length for d in y.domain_list] + [1], self.strand_list, []))
-                                    # the reduce just composes the
-                                    # domain_lists into one big ordered list
-                                    # of domains
+                matched_list = list(zip(
+                    structure,
+                    # the reduce just composes the domain_lists into one big
+                    # ordered list of domains
+                    reduce(lambda x, y: x + [d.length for d in y.domain_list] + [1],
+                           self.strand_list, [])))
                 self._fixed_structure = "".join(i[0] * i[1] for i in matched_list)
     
     def get_unique_ids(self):
@@ -233,7 +233,7 @@ class Complex(object):
         if len(self._boltzmann_queue) > 0:
             self._pop_boltzmann()
             return
-        
+
         # set up the # of structures to grab from the file, max out at
         # ~100 so we don't use too much CPU on this step. JS's testing
         # timed a 100 count at ~ .1s and 10 and 1 counts were almost

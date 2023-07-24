@@ -112,7 +112,7 @@ for i in range(20):
 
 # Note that toeh[9] == primary[0]
 energies = toeh[:9]+[primary[i/2] if i%2==0 else intermed[i/2] for i in range(len(primary)+len(intermed))]
-steps    = range(-9,0)+[v/2.0 for v in range(0,39)]
+steps    = list(range(-9,0))+[v/2.0 for v in range(0,39)]
 
 # Finally we'll compute the energies for the tube system states consisting of two complexes after strand displacement.
 
@@ -149,5 +149,3 @@ if __name__ == '__main__':
     plt.yticks(fontsize='larger',va='bottom')
     plt.xticks(fontsize='larger')
     plt.show()
-
-

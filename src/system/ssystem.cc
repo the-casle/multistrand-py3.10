@@ -40,7 +40,7 @@ void SimulationSystem::construct(void) {
 	simulation_mode = simOptions->getSimulationMode();
 	simulation_count_remaining = simOptions->getSimulationCount();
 
-	if (simOptions->statespaceActive) {
+	if (simOptions->reuseEnergyModel) {
 		energyModel = Loop::GetEnergyModel();
 	} else {
 		energyModel = new NupackEnergyModel(simOptions->getPythonSettings());
@@ -84,13 +84,9 @@ SimulationSystem::~SimulationSystem(void) {
 // the remaining members are not our responsibility, we null them out
 // just in case something thread-unsafe happens.
 
-
-// FD: for the active statespace inspection, the energy model will not be generated,
-// so do not reconstruct the energy model.
-
-//	if (energyModel != NULL) {
-//		delete energyModel;
-//	}
+	if (energyModel != NULL) {
+		delete energyModel;
+	}
 
 	if (simOptions->myComplexes != NULL) {
 		delete simOptions->myComplexes;
@@ -190,6 +186,9 @@ void SimulationSystem::finalizeRun(void) {
 }
 
 void SimulationSystem::finalizeSimulation(void) {
+
+	if (simOptions->debug)
+		cout << "Finalizing simulation..." << endl << flush;
 
 	if (noInitialMoves > 0 and simOptions->verbosity) {
 
@@ -316,7 +315,7 @@ void SimulationSystem::SimulationLoop_Trajectory() {
 
 		myTimer.advanceTime();
 
-		if (debugTraces) {
+		if (simOptions->debug) {
 			cout << "Printing my complexlist! *************************************** \n";
 			cout << complexList->toString() << endl;
 		}
@@ -538,7 +537,7 @@ void SimulationSystem::SimulationLoop_FirstStep(void) {
 
 		myTimer.advanceTime();
 
-		if (debugTraces) {
+		if (simOptions->debug) {
 			cout << "Printing my complexlist! *************************************** \n";
 			cout << complexList->toString() << endl;
 		}
@@ -699,33 +698,33 @@ int SimulationSystem::InitializeSystem(PyObject *alternate_start) {
 
 	simOptions->generateComplexes(alternate_start, current_seed);
 
-// FD: Somehow, check if complex list is pre-populated.
+	// FD: Somehow, check if complex list is pre-populated.
 	startState = NULL;
 	if (complexList != NULL)
 		delete complexList;
 
+	if (simOptions->debug)
+		cout << "myComplexes.size = " << simOptions->myComplexes->size() << endl << flush;
+
 	complexList = new SComplexList(energyModel);
 
-// FD: this is the python - C interface
+	// FD: this is the python - C interface
 	for (unsigned int i = 0; i < simOptions->myComplexes->size(); i++) {
 
-		char* tempSequence = copyToCharArray(simOptions->myComplexes->at(i).sequence);
-		char* tempStructure = copyToCharArray(simOptions->myComplexes->at(i).structure);
+		char* tempSequence = utility::copyToCharArray(simOptions->myComplexes->at(i).sequence);
+		char* tempStructure = utility::copyToCharArray(simOptions->myComplexes->at(i).structure);
 
 		id = simOptions->myComplexes->at(i).list;
 
-		tempcomplex = new StrandComplex(tempSequence, tempStructure, id);
+		tempcomplex = new StrandComplex(tempSequence, tempStructure, id, simOptions->debug);
 
 		startState = tempcomplex;
 		complexList->addComplex(tempcomplex);
 
 	}
 
-	if (utility::debugTraces) {
-
+	if (simOptions->debug)
 		cout << "Done initializing!" << endl;
-
-	}
 
 	return 0;
 }
@@ -769,6 +768,9 @@ PyObject *SimulationSystem::calculateEnergy(PyObject *start_state, int typeflag)
 
 	values = complexList->getEnergy(typeflag); // NUPACK energy output : bimolecular penalty, no Volume term.
 
+	if (simOptions->debug)
+		cout << "Done calculating energy!" << endl << flush;
+
 	retval = PyTuple_New(complexList->getCount());
 // New Reference, we return it.
 // The complex list is a linked list and new items are added at the head; so we need to reverse the resulting list to get the data back out.
@@ -777,7 +779,6 @@ PyObject *SimulationSystem::calculateEnergy(PyObject *start_state, int typeflag)
 // the reference from PyFloat_FromDouble is immediately stolen by PyTuple_SET_ITEM.
 
 	delete[] values;
-
 	return retval;
 }
 

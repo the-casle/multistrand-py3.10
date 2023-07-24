@@ -1,4 +1,3 @@
-from __future__ import print_function
 # hybridization_transitions.py
 # 
 # This example is modified from threeway_transitions.py, but provides a deeper analysis approach (for "simple" hybridization).
@@ -240,7 +239,6 @@ def setup_options_hybridization_Count(trials, toe5_seq, stem_seq, loop_seq, toe3
                 macro_AB1, macro_AD, macro_AB2, macro_AC, macro_B1D, macro_B1B2, macro_B1C, macro_DB2, macro_DC, macro_B2C,
                 macro_AB1D, macro_AB1B2, macro_AB1C, macro_ADB2, macro_ADC, macro_AB2C, macro_B1DB2, macro_B1DC, macro_B1B2C, macro_DB2C,
                 macro_AB1DB2, macro_AB1DC, macro_AB1B2C, macro_ADB2C, macro_B1DB2C, macro_AB1DB2C, completed_hybrid]
-
     return o
 
 # Here, in the second of four approaches illustrated in this file, we define macrostates for the state of the tube as combinatorial sets
@@ -325,7 +323,6 @@ def setup_options_hybridization_Loose(trials, toe5_seq, stem_seq, loop_seq, toe3
 
     # for transition mode, these are macrostates not stop conditions, since the simulation won't stop unless the name begins with "stop"
     o.stop_conditions = [initial_hairpins, macro_U1, macro_U2, macro_F1, macro_F2, macro_A, macro_B1, macro_D, macro_B2, macro_C, macro_H1, macro_H2, completed_hybrid]
-
     return o
 
 # Here there are two exact macrostates (the initial separate hairpins, and the final perfect duplex) and the rest measure distances from these two.
@@ -382,7 +379,6 @@ def setup_options_hybridization_Distance(trials, toe5_seq, stem_seq, loop_seq, t
 
     # for transition mode, these are mostly macrostates not stop conditions, since the simulation won't stop unless the name begins with "stop"
     o.stop_conditions = [initial_hairpins]+macros+[completed_hybrid]
-
     return o
 
 # In this fourth approach to macrostate definition, we chose a set of exact microstates along some canonical pathways.
@@ -536,13 +532,13 @@ def setup_options_hybridization_Exact(trials, toe5_seq, stem_seq, loop_seq, toe3
 
     # for transition mode, these are mostly macrostates not stop conditions, since the simulation won't stop unless the name begins with "stop"
     o.stop_conditions = [initial_hairpins]+macros+[completed_hybrid]
-
     return o
 
 
 # mol will be a list of True/False for which transition macrostates the system has entered
 # so in_state(mol) returns True if the system is in at least one of the listed macrostates.
 def in_state( mol ): return sum(mol) > 0
+
 
 # Gives shorthand name number n.
 # The shorthand is a single character if no more than 52 macrostates are defined; goes into multiple characters otherwise.
@@ -555,6 +551,7 @@ def shorthand(n):
         nm=charindex[n%m]+nm
     return nm
 
+
 # mol is a Boolean descriptor of macrostate occupancy, like mol above.
 # A shorthand name for this macrostate (based on the order given in stop_conditions) is provided.
 def mol_name(mol):
@@ -565,15 +562,18 @@ def mol_name(mol):
         names = ",".join(names)
     return names
 
+
 # t0 and t1 are Boolean descriptors of macrostate occupancy, like mol above.
 # here, we provide a printable name for the transition between two macrostate occupancy lists.
 def trans_name(t0,t1):
     return mol_name(t0) + ' -> ' + mol_name(t1)
 
+
 def print_transitions( transition_traj ):
     for t in transition_traj:
         print("%12g : %s" % ( t[0], mol_name(t[1]) ))
-                  
+
+
 # for each simulation, the transition trajectory reports the tuple (time_entered, which_macrostates_the_system_is_now_in)
 # Reminder: mol = macrostate = subset of defined macrostates that we are currently in.  
 # Trivial mols are the empty subset, i.e. the macrostate of not being in a defined macrostate.
@@ -617,8 +617,10 @@ def parse_transition_lists( transition_traj_list ):
 
     return (transition_dict, first_name, last_name, hitting_times)
 
+
 def parse_transition_list( transition_traj_list ):
     return parse_transition_lists( [transition_traj_list] )
+
 
 # For a second-order chain, each state is now the pair (previous mol, current mol), named e.g. "A,B;X,Y,Z".  
 # This is useful if transitions between macrostates are not Markov; tracking the history of most recent macrostate may make the chain "more Markov".
@@ -671,19 +673,22 @@ def parse2_transition_lists( transition_traj_list ):
         
     return (transition_dict, first_name, last_name, hitting_times)
 
+
 def parse2_transition_list( transition_traj_list ):
     return parse2_transition_lists( [transition_traj_list] )
+
 
 # print the true names of the defined macrostates
 def print_true_names( options, first, last ):
     print("True names of all %d defined macrostates and their abbreviations:" % (len(options.stop_conditions)))
     for i,idx in zip(options.stop_conditions,range(len(options.stop_conditions))):
-        print("{0}: {1}".format( i.tag, shorthand(idx)))
+        print(("{0}: {1}".format( i.tag, shorthand(idx))))
     print("Initial state (intersection of defined macrostates) is: %s" % first)
     print("Final state (intersection of defined macrostates) is: %s" % last)
 
+
 def print_transition_dict( transition_dict ):
-    k = transition_dict.keys()
+    k = list(transition_dict.keys())
     k.sort() 
 
     visited_states = set()
@@ -692,10 +697,9 @@ def print_transition_dict( transition_dict ):
         visited_states.add( i.split(" -> ")[1] )
 
     print("  Transitions averaged over all %d simulations (%d coarse-grained states visited):" % (o.num_simulations,len(visited_states)))
-
     for i in k:
         transition_times = np.array( transition_dict[i] )
-        print("{0}: {2:.2e} ({1})".format(i,len(transition_dict[i]),np.mean(transition_times)))
+        print(("{0}: {2:.2e} ({1})".format(i,len(transition_dict[i]),np.mean(transition_times))))
     
 
 # The first defined macrostate must be the initial macrostate, and must be exact;
@@ -708,7 +712,7 @@ def visited_macrostates( transition_dict, first, last):
 
     # each key is a transition between multisets of macrostates, e.g. "A,B -> C,e,f"
     visited_macs = []
-    for trans in transition_dict.keys():
+    for trans in list(transition_dict.keys()):
         visited_macs += trans.split(" -> ")
     visited_macs = list(set(visited_macs))
 
@@ -720,8 +724,8 @@ def visited_macrostates( transition_dict, first, last):
         import pdb; pdb.set_trace()
 
     visited_macs = [ first ] + list(set(visited_macs).difference(set([first, last]))) + [ last ]
-
     return visited_macs
+
 
 def build_transition_matrices( transition_dict, visited_macs ):
     
@@ -731,7 +735,7 @@ def build_transition_matrices( transition_dict, visited_macs ):
     N   = np.zeros((n,n))    # number of transitions from state i to j  --  P_ij will be computed as N_ij / sum_j (N_ij)
     out = np.zeros(n)        # number of transitions out of state i -- computed as sum_j (N_ij)
 
-    for trans in transition_dict.keys():
+    for trans in list(transition_dict.keys()):
         (mac_from, mac_to) = tuple( trans.split(" -> ") )
         if mac_from in visited_macs and mac_to in visited_macs:   # always true, unless subset of all macs are used
             i = visited_macs.index(mac_from)
@@ -752,6 +756,7 @@ def build_transition_matrices( transition_dict, visited_macs ):
     return dt, P, N
 
 def compute_hitting_times( transition_dict, visited_macs ):
+
 
     # visited macs must be sorted such that the first state is first, and the final state is last
     (dt, P, N) = build_transition_matrices( transition_dict, visited_macs )
@@ -782,8 +787,8 @@ def compute_hitting_times( transition_dict, visited_macs ):
     # we sort both lists according to hitting time!  
     for (s,h) in sorted(zip(visited_macs,hitting+[0.0]), key=lambda pair: -pair[1]):
         print("Mean time from %15s to %15s is %g sec." % (s,visited_macs[-1],h))
-
     return hitting
+
 
 def tally_residence_times( transition_traj_list, visited_macs):
 
@@ -819,7 +824,6 @@ def tally_residence_times( transition_traj_list, visited_macs):
                 trivial_time += (tt[i+1][0]-tt[i][0]) # time entering something else - time entering trivial mol (i.e. unlabeled state)
 
     return (residence_times, trivial_time)
-
 
 
 def compute_most_likely_path( transition_dict, visited_macs, options = None ):
@@ -886,7 +890,6 @@ def compute_most_likely_path( transition_dict, visited_macs, options = None ):
     print("with probability %s" % probstring)
 
     back_to_start = path_matrix[:,0]<np.inf  # which states can reach back to start
-
     return (path,back_to_start)  # return the path, along with information about what the reverse paths might be found
 
 

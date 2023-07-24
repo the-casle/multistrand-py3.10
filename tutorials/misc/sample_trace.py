@@ -1,4 +1,3 @@
-from __future__ import print_function
 # FD, May 17th, 2017. 
 # This demonstrates the pair-type functionality
 # For a given complex, Pairtype returns a unique representation. 
@@ -18,7 +17,6 @@ ATIME_OUT = 0.001
 def printTrajectory(o):
     
     seqstring = ""
-    
     for i in range(len(o.full_trajectory)):
     
         time = 1e3 * o.full_trajectory_times[i]
@@ -27,12 +25,10 @@ def printTrajectory(o):
         ids = []
         newseqs = []
         structs = []
-        dG = 0.0
+        dG = 0.0;
         
         pairTypes = []
-        
-        for state in states: 
-            
+        for state in states:
             ids += [ str(state[2]) ]
             newseqs += [ state[3] ]  # extract the strand sequences in each complex (joined by "+" for multistranded complexes)
             structs += [ state[4] ]  # similarly extract the secondary structures for each complex
@@ -41,55 +37,29 @@ def printTrajectory(o):
         newseqstring = ' '.join(newseqs)  # make a space-separated string of complexes, to represent the whole tube system sequence
         tubestruct = ' '.join(structs)  # give the dot-paren secondary structure for the whole test tube
                  
-        
-        if not newseqstring == seqstring : 
+        if not newseqstring == seqstring :
             print(newseqstring)
             seqstring = newseqstring  # because strand order can change upon association of dissociation, print it when it changes        
 
-        print(tubestruct + ('   t=%.6f ms,  dG=%3.2f kcal/mol  ' % (time, dG))) 
+        print(f"{tubestruct}   t={time:.6f} ms,  dG={dG:3.2f} kcal/mol  ")
 
-        
 
 def doSims(strandSeq, numTraj=2):    
 
     o1 = standardOptions()
-    
     o1.num_simulations = numTraj
     o1.output_interval = 1 
     o1.simulation_time = ATIME_OUT
-    
     hybridization(o1, strandSeq )
-
     o1.initial_seed = 1777+6
 
     s = SimSystem(o1)
     s.start()
     printTrajectory(o1)        
-        
 
     
 # # The actual main method
 if __name__ == '__main__':
     
     print(sys.argv)
-    doSims( "GCGTTTCAC",1)
-         
-        
-        
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+    doSims( "GCGT", 1)

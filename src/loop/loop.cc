@@ -2304,8 +2304,7 @@ Loop *Loop::performDeleteMove(Move *move) {
 			int* sidelens = new int[end_->numAdjacent - 1];
 			char** seqs = new char*[end_->numAdjacent - 1];
 
-			if (utility::debugTraces) {
-
+			if (energyModel->simOptions->debug) {
 				cout << "s_index = " << s_index << endl;
 				cout << "e_index = " << e_index << endl;
 			}
@@ -3980,9 +3979,8 @@ double MultiLoop::doChoice(Move *move, Loop **returnLoop) {
 
 void MultiLoop::generateMoves(void) {
 
-	if (utility::debugTraces) {
+	if (energyModel->simOptions->debug)
 		cout << "Multiloop generating moves!" << endl;
-	}
 
 	int loop, loop2, loop3, loop4, temploop, tempindex, loops[4];
 	int pt;
@@ -4591,7 +4589,7 @@ double OpenLoop::doChoice(Move *move, Loop **returnLoop) {
 
 void OpenLoop::generateMoves(void) {
 
-	if (utility::debugTraces || false) {
+	if (energyModel->simOptions->debug) {
 		cout << "\n OpenLoop generating moves!" << endl;
 		cout << this->typeInternalsToString();
 	}
@@ -4927,8 +4925,6 @@ char* OpenLoop::getBase(char type, int index, HalfContext half) {
 		}
 	}
 
-//	if (utility::debugTraces) {
-
 	cout << "Failing with  \n";
 
 	cout << "type: " << (int) type << "\n";
@@ -4976,8 +4972,6 @@ char* OpenLoop::getBase(char type, int index, HalfContext half) {
 			}
 		}
 	}
-
-//	}
 
 	assert(0);
 	return NULL;

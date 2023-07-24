@@ -4,20 +4,19 @@ from __future__ import absolute_import
 # Copyright 2010-2017 Caltech                                                  
 # Joseph Schaeffer                                                             
 # Chris Berlind                                                                
-# Frits Dannenberg                                                             
+# Frits Dannenberg
 
+import copy
+from enum import IntEnum
 from .interface import Interface
 from ..objects import Strand, Complex, StopCondition
 from ..__init__ import __version__
 
-import copy
-import warnings
 
 """ Literals for Multistrand"""
 
 
-class  Literals(object):
-    
+class Literals(object):
     """
     Preset tags that are used in the MergeResult objects (FirstStepRate, FirstStepLeakRate, FirstPassageRate)
     and multistrand.experiment  
@@ -66,41 +65,47 @@ class  Literals(object):
             
             Compuational expense, low to high :           dissoc -- exact -- count -- loose     
     """
-
     exact_macrostate = 0  # 
     bound_macrostate = 1  # 
     dissoc_macrostate = 2  # 
     ordered_macrostate = 2 
     loose_macrostate = 3  # 
     count_macrostate = 4  # 
-    
-    
+
+
+class Energy_Type(IntEnum):
+    Loop_energy = 0     # [default]: no volume or association terms included. So only loop energies remain.
+    Volume_energy = 1   # include dG_volume. No clear interpretation for this.
+    Complex_energy = 2  # include dG_assoc. This is the NUPACK complex microstate energy, sans symmetry terms.
+    Tube_energy = 3     # include dG_volume + dG_assoc. Summed over complexes, this is the system state energy.
+
+
 class Options(object):
     """ The main wrapper for controlling a Multistrand simulation. Has an interface for returning results. """
        
     '''Constants:'''
     ZERO_C_IN_K = 273.15
 
-    RateMethodToString = [ "None", "Metropolis", "Kawasaki"]
-    dangleToString = [ "None", "Some", "All"]
+    RateMethodToString = ["None", "Metropolis", "Kawasaki", "Arrhenius"]
+    dangleToString = ["None", "Some", "All"]
 
     # Parameter type. Vienna is depreciated.
-    viennaModel = 0 
-    nupackModel = 1 
-    parameterTypeToString = [ "Vienna", "Nupack" ]
-
-    substrateToString = [ "Invalid", "RNA", "DNA"]    
+    viennaModel = 0
+    nupackModel = 1
+    parameterTypeToString = ["Vienna", "Nupack" ]
+    substrateToString = ["Invalid", "RNA", "DNA"]
     
     # translation
-    simulationMode = {  "Normal"    :               Literals.first_passage_time,
-                        "First Step":               Literals.first_step,
-                        "Transition":               Literals.transition,
-                        "Trajectory":               Literals.trajectory,
-                        "First Passage Time":       Literals.first_passage_time}
+    simulationMode = {"Normal"    :         Literals.first_passage_time,
+                      "First Step":         Literals.first_step,
+                      "Transition":         Literals.transition,
+                      "Trajectory":         Literals.trajectory,
+                      "First Passage Time": Literals.first_passage_time}
     
     cotranscriptional_rate_default = 0.001  # 1 nt added every 1 ms
     
     activestatespace = False;
+    reuse_energymodel = False; # JAKE MERGE: Is this actually hooked up to anything?
     
     def __init__(self, *args, **kargs):
         """
@@ -134,7 +139,6 @@ class Options(object):
         # Data Members                                   #
         # ->Members new to the python implementation     #
         #                                                #
-        #                                                #
         ##################################################
         
         """ Pipe to let Multistrand know the version from ../__init__.py """
@@ -161,7 +165,8 @@ class Options(object):
         """ Indicates how much output will be generated for each trajectory run.
         Value = 0:  No end state reported, no warnings for timeout and nonitial steps
         Value = 1:  No end states reports, warnings active   
-        Value = 2:  warnings and end states reports to stdout
+        Value = 2:  Warnings and end states reports to stdout
+        Value = 3:  Print debugging information from SimulationSystem to stdout
         """
         
         self.print_initial_first_step = False
@@ -302,25 +307,24 @@ class Options(object):
         are added.
         """
         
-        self.lnAEnd = -0.1;
-        self.lnALoop = -0.1;
-        self.lnAStack = -0.1;
-        self.lnAStackStack = -0.1;
-        self.lnALoopEnd = -0.1;
-        self.lnAStackEnd = -0.1;
-        self.lnAStackLoop = -0.1;        
-        self.EEnd = -0.1;
-        self.ELoop = -0.1;
-        self.EStack = -0.1;
-        self.EStackStack = -0.1;
-        self.ELoopEnd = -0.1;
-        self.EStackEnd = -0.1;
-        self.EStackLoop = -0.1; 
+        self.lnAEnd = -0.1
+        self.lnALoop = -0.1
+        self.lnAStack = -0.1
+        self.lnAStackStack = -0.1
+        self.lnALoopEnd = -0.1
+        self.lnAStackEnd = -0.1
+        self.lnAStackLoop = -0.1
+        self.EEnd = -0.1
+        self.ELoop = -0.1
+        self.EStack = -0.1
+        self.EStackStack = -0.1
+        self.ELoopEnd = -0.1
+        self.EStackEnd = -0.1
+        self.EStackLoop = -0.1
          
         """ These are undocumented adjustments to the energy model """
-
-        self.dSA = -0.0;
-        self.dHA = -0.0;
+        self.dSA = -0.0
+        self.dHA = -0.0
 
         """ 
             Buffer conditions 
@@ -408,77 +412,67 @@ class Options(object):
                     
         warningmsg = "Warning! rate_scaling is set, enabling support for legacy code. Now setting rate defaults for "
                 
-        if (self.temperature == 298.15) & (self.rate_method == Literals.kawasaki) :
+        if self.temperature == 298.15 and self.rate_method == Literals.kawasaki:
             warningmsg += "Kawasaki 25 C"
             self.JSKawasaki25()
-        elif (self.temperature == 310.15) & (self.rate_method == Literals.kawasaki) :
+        elif self.temperature == 310.15 and self.rate_method == Literals.kawasaki:
             warningmsg += "Kawasaki 37 C"
             self.JSKawasaki37()
-        elif (self.temperature == 298.15) & (self.rate_method == Literals.metropolis) :
+        elif self.temperature == 298.15 and self.rate_method == Literals.metropolis:
             warningmsg += "Metropolis 25 C"
             self.JSMetropolis25()
-        elif (self.temperature == 310.15) & (self.rate_method == Literals.metropolis) :
+        elif self.temperature == 310.15 and self.rate_method == Literals.metropolis:
             warningmsg += "Metropolis 37 C"
             self.JSMetropolis37()
         else:
             warningmsg += "JS-Default"
             self.JSDefault()
-            
-        print(warningmsg) 
+
+        print(warningmsg)
         self.rate_scaling = None       
         
     # FD, May 5th 2017
     # Supplying rate options for Metropolis and Kawasaki methods,
     # all using the dangles = some option. Also:  one general default,
-    # and one setting for Metropolis rates derived for DNA23. 
+    # and one setting for Metropolis rates derived for DNA23.
     
-    def JSDefault(self): 
+    def JSDefault(self):
         """ Default rates from Joseph Schaeffer's thesis  """
-        
-        self.unimolecular_scaling = 1.50e+08;
-        self.bimolecular_scaling = 1.38e+06;
+        self.unimolecular_scaling = 1.50e+08
+        self.bimolecular_scaling = 1.38e+06
     
-    def JSMetropolis25(self): 
+    def JSMetropolis25(self):
         """ Default rates for Metropolis at 25 degree Celcius, from Joseph Schaeffer's thesis
-        
         """
-        
-        self.unimolecular_scaling = 4.4e8;
-        self.bimolecular_scaling = 1.26e6;
+        self.unimolecular_scaling = 4.4e8
+        self.bimolecular_scaling = 1.26e6
     
-    def JSKawasaki25(self): 
+    def JSKawasaki25(self):
         """ Default rates for Kawasaki at 25 degree Celcius, from Joseph Schaeffer's thesis
-        
         """
-        
-        self.unimolecular_scaling = 6.1e7;
-        self.bimolecular_scaling = 1.29e6;
+        self.unimolecular_scaling = 6.1e7
+        self.bimolecular_scaling = 1.29e6
     
     def JSKawasaki37(self):
         """ Default rates for Kawasaki at 37 degree Celcius, from Joseph Schaeffer's thesis
         """
-        
-        self.unimolecular_scaling = 1.5e8;
-        self.bimolecular_scaling = 1.38e6;
+        self.unimolecular_scaling = 1.5e8
+        self.bimolecular_scaling = 1.38e6
     
-    def JSMetropolis37(self): 
+    def JSMetropolis37(self):
         """ Default rates for Metropolis at 37 degree Celcius, from Joseph Schaeffer's thesis
         """
-        
-        self.unimolecular_scaling = 7.3e8;
-        self.bimolecular_scaling = 1.40e6;
-    
+        self.unimolecular_scaling = 7.3e8
+        self.bimolecular_scaling = 1.40e6
 
     def DNA23Metropolis(self):
         """ 
         Parameters for Metropolis at 25 degree Celcius, from the DNA23 conference (55th walker)
         """
-       
-        self.unimolecular_scaling = 2.41686715e+06;
-        self.bimolecular_scaling = 8.01171383e+05 ;
+        self.unimolecular_scaling = 2.41686715e+06
+        self.bimolecular_scaling = 8.01171383e+05 
     
     def DNA23Arrhenius(self):
-        
         self.rate_method = Literals.arrhenius
 
         self.lnAStack = 1.41839430e+01
@@ -1016,7 +1010,7 @@ class Options(object):
         for k in kargs.keys():
             
             if k in arg_lookup_table:
-                arg_lookup_table[k](kargs[k])          
+                arg_lookup_table[k](kargs[k])
                 
             # FD: Do some additional parsing for legacy support            
             # FD: This code simply translates the string calls to the numerical constants 
@@ -1035,8 +1029,8 @@ class Options(object):
             elif k == 'substrate_type':
                 if isinstance(kargs[k], str):
                     self.substrate_type = self.substrateToString.index(kargs[k])
-                    
-            elif (k == 'simulation_mode') & (isinstance(kargs[k], str)):
+
+            elif k == 'simulation_mode' and isinstance(kargs[k], str):
                     self.simulation_mode = self.simulationMode[kargs[k]]
 
             else:

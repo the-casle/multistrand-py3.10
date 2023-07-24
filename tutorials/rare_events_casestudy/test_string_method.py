@@ -1,4 +1,3 @@
-from __future__ import print_function
 
 from hybridization23 import Settings, ResultsHybridization, suyamaT, suyamaC, enum_hybridization, title_hybridization, testSeq, NUM_OF_REPEATS, CONVERGENCE_CRIT
 from multistrand.system import SimSystem
@@ -21,7 +20,7 @@ morrison = ["TTGGTGATCC", "AGATTAGCAGGTTTCCCACC", "GCCCACACTCTTACTTATCGACT", "AG
 morrison0 = ["TTGGTGATCC"]
 morrison1 = ["AGATTAGCAGGTTTCCCACC"]
 morrison15 = ["AGATTAGCAGGTTTC"]
-morrison15 = ["AGATTAGCAGGTTTC"]
+morrison13 = ["AGATTAGCAGGTT"]
 
 longdomain = ["AGAGGCTTATAACTGTGTCGGGT"]
 
@@ -71,11 +70,9 @@ def timings(seq, nTrials, deltaPruning=None):
         startStates = dissociationString(seq)
     
     endState = startStates[-1]
-    
     sett = association_comparison(seq, endState[0])
 
     for i in range(NUM_OF_REPEATS):
-    
         startTime = time.time()
         
         BuilderRate.solveToggle = 0
@@ -85,7 +82,9 @@ def timings(seq, nTrials, deltaPruning=None):
         myBuilder.genAndSavePathsFromString(startStates[:(len(startStates) - 1)])
         print(myBuilder)
         
+        startTime2 = time.time()
         myBuilder.fattenStateSpace()
+        print("Searching transitions took " + str(  1000 * (time.time() - startTime2) / len(myBuilder.protoSpace)) + "ms per state")
         print(myBuilder)
         
 #         myBuilder.genUntilConvergenceWithInitialState(10000, startStates[:(len(startStates) - 1)], printMeanTime=True)
@@ -100,7 +99,6 @@ def timings(seq, nTrials, deltaPruning=None):
             maxRange = 5
 
         for i in range(maxRange):
-
             builderRate = BuilderRate(myBuilder)
 
             builderRate.rateLimit = builderRate.rateLimit * (10 ** i)
@@ -118,7 +116,8 @@ def timings(seq, nTrials, deltaPruning=None):
             
             output.rates.append(np.log10(1.0 / builderRate.averageTimeFromInitial(bimolecular=biCheck)))
             pruned_mfpt = builderRate.averageTimeFromInitial(bimolecular=False)
-            print("Rate = %.2E, MFPT = %.2E, compute_time =  %.2f \n\n " % (output.rates[-1], pruned_mfpt, output.buildTime[-1]))
+            print(f"Rate = {output.rates[-1]:.2E}, MFPT = {pruned_mfpt:.2E}, "
+                  f"compute_time =  {output.buildTime[-1]:.2f} \n\n")
             output.matrixTime.append(time.time() - startTime)
             output.nStates.append(len(builderRate.statespace))
      
@@ -162,40 +161,23 @@ if __name__ == '__main__':
     deltaPruning = None
 
     if len(sys.argv) > 2:
-        
         toggle = sys.argv[1]
         nTrials = sys.argv[2]
-
-    else :
-        raise ValueError("Expected two input arguments, example:   morrison 500 0.01 ")
+    else:
+        raise ValueError("Expected two input arguments, example:   test 500  ")
 
     if len(sys.argv) > 3:
-        
         deltaPruning = float(sys.argv[3])
 
     if toggle == "morrison":
-    
         iterateResults(morrison, nTrials, deltaPruning=deltaPruning)
-        
-    if toggle == "morrison0":
-    
+    if toggle == "morrison0"  or toggle == "test":
         iterateResults(morrison0, nTrials, deltaPruning=deltaPruning)
-    
     if toggle == "morrison1":
-        
         iterateResults(morrison1, nTrials, deltaPruning=deltaPruning)
-
     if toggle == "morrison15":
-        
         iterateResults(morrison15, nTrials, deltaPruning=deltaPruning)
-
-    if toggle == "test":
-
-        iterateResults("ACTAGGGG", nTrials, deltaPruning=deltaPruning)
-
+    if toggle == "morrison13":
+        iterateResults(morrison13, nTrials, deltaPruning=deltaPruning)
     if toggle == "longdomain":
-
         iterateResults(longdomain, nTrials, deltaPruning=deltaPruning)
-
-#             
-        

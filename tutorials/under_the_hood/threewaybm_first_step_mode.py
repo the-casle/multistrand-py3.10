@@ -38,7 +38,7 @@ from __future__ import print_function
 # Import things you need
 import sys, os
 
-import cPickle
+import pickle
 import random
 import numpy as np
 
@@ -118,6 +118,7 @@ def create_setup(toehold_length, num_traj, rate_method_k_or_m):
     o.stop_conditions = [success_stop_condition, failed_stop_condition]
     return o
 
+
 # The following is somewhat general code for running a bunch of Multistrand simulations on as many cores as this computer has available.
 # Directories "Data_toehold_*" are created and simulation results are stored there.
 # When all the simulations are done, the data is all read back in, and processed together.
@@ -172,7 +173,7 @@ def actual_simulation(toehold_length, num_traj, rate_method_k_or_m, index):
     filename = "DATA_{0}_{1}_{2:04}.dat".format(rate_method_k_or_m, toehold_length, index)
     full_filename = os.path.join(prefix, filename)
     f = open(full_filename, 'wb')
-    cPickle.dump(o.interface.results, f, protocol=-1)
+    pickle.dump(o.interface.results, f, protocol=-1)
     f.close()
 
 
@@ -197,7 +198,7 @@ def load_file(dirname, filename):
     fullname = os.path.join(dirname, filename)
 
     f = open(fullname, 'rb')
-    res = cPickle.load(f)
+    res = pickle.load(f)
     f.close()
 
     return res
@@ -253,7 +254,7 @@ def combine_dataset(sampleset):
         print("No data, no rates computed.")
         return None
 
-    f, r, c = zip(*[i for i in sampleset if i is not None])
+    f, r, c = list(zip(*[i for i in sampleset if i is not None]))
     forward_times = np.concatenate(f, axis=0)
     reverse_times = np.concatenate(r, axis=0)
     # these are essentially "forward" (successful displacement) and "reverse" (failed displacement) first passage times.
@@ -300,9 +301,8 @@ def final_results(toehold_length, rate_method):
     print("Results for toehold length %d (with %s kinetics)" % (toehold_length, rate_method))
     return combine_dataset(load_dataset(toehold_length, rate_method))
 
+
 ###### If run from the command line, the simulations are run but not analyzed.
-
-
 if __name__ == '__main__':
     if len(sys.argv) < 2:
         idx = 0
@@ -332,8 +332,8 @@ if __name__ == '__main__':
         testrun.runTests_Async()    
 
     if idx == 'analyze':
-        toelengths = range(1, 16)
-        k1s = range(1, 16)
+        toelengths = list(range(1, 16))
+        k1s = list(range(1, 16))
         for n in toelengths:
             rates = final_results(n, "Metropolis")
             if rates == None:

@@ -4,7 +4,6 @@
 
  A simple extension module for python that exposes the
  SimulationSystem object as a createable object that has one method.
-
  */
 
 #include "Python.h"
@@ -22,8 +21,9 @@
 #include "google/heap-profiler.h"
 #endif
 
-typedef struct {
+// JAKE MERGE: need to check if I can get rid of a bunch of unnecessary incref and decref in the functions for this file
 
+typedef struct {
 	PyObject_HEAD
 	SimulationSystem *ob_system; /* Our one data member, no other attributes. */
 	PyObject* options;
@@ -46,12 +46,12 @@ static int SimSystemObject_init(SimSystemObject *self, PyObject *args) {
 	if (!PyArg_ParseTuple(args, "O:SimSystem()", &self->options))
 		return -1;
 
-	Py_INCREF(self->options); /* Will be decreffed in dealloc, or
-	 here if there's a type error. */
+	/* Will be decreffed in Py_CLEAR(), or here if there's a type error. */
+	Py_INCREF(self->options);
 
 	/* check the type */
-	if (strcmp(self->options->ob_type->tp_name, "Options") != 0) {
-		printf("[%s] options name\n", self->options->ob_type->tp_name);
+	if (strcmp(Py_TYPE(self->options)->tp_name, "Options") != 0) {
+		printf("[%s] options name\n", Py_TYPE(self->options)->tp_name);
 		/* Note that we'll need to change the above once it's packaged nicely. */
 		Py_DECREF(self->options);
 		PyErr_SetString(PyExc_TypeError, "Must be passed a single Options object.");
@@ -61,7 +61,8 @@ static int SimSystemObject_init(SimSystemObject *self, PyObject *args) {
 	if (self->ob_system == NULL) /* something horrible occurred */
 	{
 		Py_DECREF(self->options);
-		PyErr_SetString(PyExc_MemoryError, "Could not create the SimulationSystem [C++] object, possibly memory issues?.");
+		PyErr_SetString(PyExc_MemoryError,
+						"Could not create the SimulationSystem [C++] object, possibly memory issues?.");
 		return -1;
 	}
 	return 0;
@@ -72,13 +73,13 @@ static PyObject *SimSystemObject_start(SimSystemObject *self, PyObject *args) {
 		return NULL;
 
 	if (self->ob_system == NULL) {
-		PyErr_SetString(PyExc_AttributeError, "The associated SimulationSystem [C++] object no longer exists, cannot start the system.");
+		PyErr_SetString(PyExc_AttributeError,
+						"The associated SimulationSystem [C++] object no longer exists, cannot start the system.");
 		return NULL;
 	}
 	self->ob_system->StartSimulation();
 
-	Py_INCREF(Py_None);
-	return Py_None;
+	Py_RETURN_NONE;
 }
 
 static PyObject *SimSystemObject_initialInfo(SimSystemObject *self, PyObject *args) {
@@ -86,13 +87,13 @@ static PyObject *SimSystemObject_initialInfo(SimSystemObject *self, PyObject *ar
 		return NULL;
 
 	if (self->ob_system == NULL) {
-		PyErr_SetString(PyExc_AttributeError, "The associated SimulationSystem [C++] object no longer exists, cannot query the system.");
+		PyErr_SetString(PyExc_AttributeError,
+						"The associated SimulationSystem [C++] object no longer exists, cannot query the system.");
 		return NULL;
 	}
 	self->ob_system->initialInfo();
 
-	Py_INCREF(Py_None);
-	return Py_None;
+	Py_RETURN_NONE;
 }
 
 static PyObject *SimSystemObject_localTransitions(SimSystemObject *self, PyObject *args) {
@@ -100,13 +101,13 @@ static PyObject *SimSystemObject_localTransitions(SimSystemObject *self, PyObjec
 		return NULL;
 
 	if (self->ob_system == NULL) {
-		PyErr_SetString(PyExc_AttributeError, "The associated SimulationSystem [C++] object no longer exists, cannot query the system.");
+		PyErr_SetString(PyExc_AttributeError,
+						"The associated SimulationSystem [C++] object no longer exists, cannot query the system.");
 		return NULL;
 	}
 	self->ob_system->localTransitions();
 
-	Py_INCREF(Py_None);
-	return Py_None;
+	Py_RETURN_NONE;
 }
 
 static int SimSystemObject_traverse(SimSystemObject *self, visitproc visit, void *arg) {
@@ -120,6 +121,8 @@ static int SimSystemObject_clear(SimSystemObject *self) {
 }
 
 static void SimSystemObject_dealloc(SimSystemObject *self) {
+	PyObject_GC_UnTrack(self); // JAKE MERGE: What does this do?
+
 	if (self->ob_system != NULL) {
 		delete self->ob_system;
 		self->ob_system = NULL;
@@ -168,63 +171,54 @@ options [type=:class:`multistrand.options.Options`]  -- The options to use for\n
                                                         required argument.\n\
 \n";
 
-static PyMethodDef SimSystemObject_methods[] = { { "__init__", (PyCFunction) SimSystemObject_init, METH_COEXIST | METH_VARARGS, PyDoc_STR(
-		docstring_SimSystem_init) }, { "start", (PyCFunction) SimSystemObject_start, METH_VARARGS, PyDoc_STR(docstring_SimSystem_start) }, { "initialInfo",
-		(PyCFunction) SimSystemObject_initialInfo, METH_VARARGS, PyDoc_STR(docstring_SimSystem_initialInfo) }, { "localTransitions",
-		(PyCFunction) SimSystemObject_localTransitions, METH_VARARGS, PyDoc_STR(docstring_SimSystem_localTransitions) }, { NULL, NULL } /* Sentinel */
-/* Note that the dealloc, etc methods are not
- defined here, they're in the type object's
- methods table, not the basic methods table. */
+static PyMethodDef SimSystemObject_methods[] = {
+  { "__init__", (PyCFunction) SimSystemObject_init,
+  	METH_COEXIST | METH_VARARGS, PyDoc_STR(docstring_SimSystem_init) },
+  { "start", (PyCFunction) SimSystemObject_start,
+  	METH_VARARGS, PyDoc_STR(docstring_SimSystem_start) },
+  { "initialInfo", (PyCFunction) SimSystemObject_initialInfo,
+  	METH_VARARGS, PyDoc_STR(docstring_SimSystem_initialInfo) },
+  { "localTransitions", (PyCFunction) SimSystemObject_localTransitions,
+  	METH_VARARGS, PyDoc_STR(docstring_SimSystem_localTransitions) },
+  { NULL, NULL } /* Sentinel */
+  /* Note that the dealloc, etc methods are not
+  defined here, they're in the type object's
+  methods table, not the basic methods table. */
 };
 
-static PyMemberDef SimSystemObject_members[] = { { "options", T_OBJECT_EX, offsetof(SimSystemObject, options), 0,
-		"The :class:`multistrand.options.Options` object controlling this simulation system." }, { NULL } /* Sentinel */
+static PyMemberDef SimSystemObject_members[] = {
+	{ "options", T_OBJECT_EX, offsetof(SimSystemObject, options), 0,
+	  "The :class:`multistrand.options.Options` object controlling this simulation system." },
+	{ NULL } /* Sentinel */
 };
 
 static PyTypeObject SimSystem_Type = {
-/* Note that the ob_type field cannot be initialized here. */
-PyVarObject_HEAD_INIT(NULL, 0) "multistrand.system.SimSystem", /* tp_name */
-sizeof(SimSystemObject), /* tp_basicsize */
-0, /* tp_itemsize  [it's something that's a relic, should be 0] */
-/* standard method defs are next */
-(destructor) SimSystemObject_dealloc, /* tp_dealloc */
-0, /* tp_print [not quite the same as str] */
-0, /* tp_getattr see comment out line below. */
-0, /* tp_setattr */
-0, /* tp_compare */
-0, /* tp_repr */
-0, /* tp_as_number */
-0, /* tp_as_sequence */
-0, /* tp_as_mapping */
-0, /* tp_hash */
-0, /* tp_call */
-0, /* tp_str */
-0, /* tp_getattro */
-0, /* tp_setattro */
-0, /* tp_as_buffer */
-Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE | Py_TPFLAGS_HAVE_GC, /* tp_flags */
-PyDoc_STR(docstring_SimSystem), /* tp_doc */
-(traverseproc) SimSystemObject_traverse, /* tp_traverse */
-(inquiry) SimSystemObject_clear, /* tp_clear */
-0, /* tp_richcompare */
-0, /* tp_weaklistoffset */
-0, /* tp_iter */
-0, /* tp_iternext */
-SimSystemObject_methods, /* tp_methods */
-SimSystemObject_members, /* tp_members */
-0, /* tp_getset */
-0, /* tp_base */
-0, /* tp_dict */
-0, /* tp_descr_get */
-0, /* tp_descr_set */
-0, /* tp_dictoffset */
-(initproc) SimSystemObject_init, /* tp_init */
-0, /* tp_alloc */
-SimSystemObject_new, /* tp_new */
-/* if we do want tp_new, it needs to be set in the module init.
- Or maybe not. Trying it here.*/
-/* 0,                              /\* tp_free *\/ */
-/* 0,                              /\* tp_is_gc *\/ */
+   /* Note that the ob_type field cannot be initialized here. */
+   PyVarObject_HEAD_INIT(NULL, 0)
+   .tp_name = "multistrand.system.SimSystem",
+   .tp_basicsize = sizeof(SimSystemObject),
+   .tp_itemsize = 0, /* [it's something that's a relic, should be 0] */
+   /* standard method defs are next */
+   .tp_dealloc = (destructor) SimSystemObject_dealloc,
+   .tp_vectorcall_offset = 0, /* new slot semantics in Python 3.8 */
+   .tp_getattr = 0, .tp_setattr = 0,
+   .tp_as_async = 0, /* new slot semantics in Python 3.8 */
+   .tp_repr = 0, .tp_as_number = 0, .tp_as_sequence = 0, .tp_as_mapping = 0,
+   .tp_hash = 0, .tp_call = 0, .tp_str = 0, .tp_getattro = 0, .tp_setattro = 0,
+   .tp_as_buffer = 0,
+   .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE | Py_TPFLAGS_HAVE_GC,
+   .tp_doc = PyDoc_STR(docstring_SimSystem),
+   .tp_traverse = (traverseproc) SimSystemObject_traverse,
+   .tp_clear = (inquiry) SimSystemObject_clear,
+   .tp_richcompare = 0, .tp_weaklistoffset = 0, .tp_iter = 0, .tp_iternext = 0,
+   .tp_methods = SimSystemObject_methods,
+   .tp_members = SimSystemObject_members,
+   .tp_getset = 0, .tp_base = 0, .tp_dict = 0,
+   .tp_descr_get = 0, .tp_descr_set = 0, .tp_dictoffset = 0,
+   .tp_init = (initproc) SimSystemObject_init,
+   .tp_alloc = 0,
+   .tp_new = (newfunc) SimSystemObject_new,
+   .tp_free = 0, .tp_is_gc = 0,
 };
 
 static PyObject *System_initialize_energymodel(PyObject *self, PyObject *args) {
@@ -249,8 +243,7 @@ static PyObject *System_initialize_energymodel(PyObject *self, PyObject *args) {
 			temp = new NupackEnergyModel(options_object);
 		Loop::SetEnergyModel(temp);
 	}
-	Py_INCREF(Py_None);
-	return Py_None;
+	Py_RETURN_NONE;
 }
 
 static PyObject *System_calculate_energy(PyObject *self, PyObject *args) {
@@ -260,8 +253,13 @@ static PyObject *System_calculate_energy(PyObject *self, PyObject *args) {
 	PyObject *start_state_object = NULL;
 	PyObject *energy;
 	int typeflag = 0;
-	if (!PyArg_ParseTuple(args, "O|Oi:energy(state, options[, energytypeflag])", &start_state_object, &options_object, &typeflag))
+	if (!PyArg_ParseTuple(args, "O|Oi:energy(state, options[, energytypeflag])",
+						  &start_state_object, &options_object, &typeflag))
 		return NULL;
+	if (!(0 <= typeflag && typeflag <= 3)) {
+		PyErr_SetString(PyExc_TypeError, "Invalid 'energy_type' argument!");
+		return NULL;
+	}
 	if (options_object != NULL) {
 
 		temp = new SimulationSystem(options_object);
@@ -271,8 +269,9 @@ static PyObject *System_calculate_energy(PyObject *self, PyObject *args) {
 
 		if (temp->isEnergymodelNull()) {
 
-			PyErr_Format(PyExc_AttributeError,
-					"No energy model available, cannot compute energy. Please pass an options object, or use multistrand.system.initialize_energy_model(...).\n");
+			PyErr_Format(
+				PyExc_AttributeError,
+				"No energy model available, cannot compute energy. Please pass an options object, or use multistrand.system.initialize_energy_model(...).\n");
 
 			if (options_object != NULL) {
 				Py_XDECREF(options_object);
@@ -300,8 +299,10 @@ static PyObject *System_calculate_rate(PyObject *self, PyObject *args, PyObject 
 
 	static char *kwlist[] = { "start_energy", "end_energy", "options", "joinflag", NULL };
 
-	if (!PyArg_ParseTupleAndKeywords(args, keywds, "dd|Oi:calculate_rate(start_energy, end_energy, [options=None, joinflag=0])", kwlist, &start_energy,
-			&end_energy, &options_object, &joinflag))
+	if (!PyArg_ParseTupleAndKeywords(
+			args, keywds,
+			"dd|Oi:calculate_rate(start_energy, end_energy, [options=None, joinflag=0])",
+			kwlist, &start_energy, &end_energy, &options_object, &joinflag))
 		return NULL;
 
 	if (options_object != NULL)
@@ -310,8 +311,9 @@ static PyObject *System_calculate_rate(PyObject *self, PyObject *args, PyObject 
 	if (options_object == NULL) {
 		em = Loop::GetEnergyModel();
 		if (em == NULL) {
-			PyErr_Format(PyExc_AttributeError,
-					"No energy model available, cannot compute rates. Please pass an options object, or use multistrand.system.initialize_energy_model(...).\n");
+			PyErr_Format(
+				PyExc_AttributeError,
+				"No energy model available, cannot compute rates. Please pass an options object, or use multistrand.system.initialize_energy_model(...).\n");
 			if (options_object != NULL)
 				Py_XDECREF(options_object);
 			return NULL;
@@ -319,15 +321,17 @@ static PyObject *System_calculate_rate(PyObject *self, PyObject *args, PyObject 
 
 	} else if (options_object != NULL) {
 		if (testLongAttr(options_object, parameter_type, =, 0)) {
-			throw std::invalid_argument("Attempting to load ViennaRNA parameters (depreciated)");
+			throw std::invalid_argument(
+				"Attempting to load ViennaRNA parameters (depreciated)");
 //        em = new ViennaEnergyModel( options_object );
 		} else {
 			em = new NupackEnergyModel(options_object);
 		}
 
 		if (em == NULL) {
-			PyErr_Format(PyExc_AttributeError,
-					"Could not initialize the energy model, cannot compute rates. Please pass a valid options object, or use multistrand.system.initialize_energy_model(...).\n");
+			PyErr_Format(
+				PyExc_AttributeError,
+				"Could not initialize the energy model, cannot compute rates. Please pass a valid options object, or use multistrand.system.initialize_energy_model(...).\n");
 			if (options_object != NULL) {
 				Py_XDECREF(options_object);
 			}
@@ -363,7 +367,6 @@ static PyObject *System_run_system(PyObject *self, PyObject *args) {
 
 	SimulationSystem *temp = NULL;
 	PyObject *options_object = NULL;
-	int typeflag = 0;
 	if (!PyArg_ParseTuple(args, "O|Oi:run_system( options )", &options_object))
 		return NULL;
 	Py_INCREF(options_object);
@@ -380,30 +383,26 @@ static PyObject *System_run_system(PyObject *self, PyObject *args) {
 #endif
 
 	Py_XDECREF(options_object);
-	Py_INCREF(Py_None);
-	return Py_None;
-
+	Py_RETURN_NONE;
 }
 
-static PyMethodDef System_methods[] =
-		{
-				{ "energy", (PyCFunction) System_calculate_energy, METH_VARARGS,
-						PyDoc_STR(
-								" \
+static PyMethodDef System_methods[] = {
+	{ "energy", (PyCFunction) System_calculate_energy,
+	  METH_VARARGS, PyDoc_STR(" \
 energy( start_state, options=None, energy_type=0)\n\
-Computes the energy of the passed state [a list of complexes or resting states], using\
+Computes the energy of the passed state [a list of complexes or resting states], using \
 temperature, etc, settings from the options object passed.\n\n\
 Parameters\n\
-energy_type = 0 ('Loop energy') [default]: no volume or association terms included. So only loop energies remain.\n\
-energy_type = 1 ('Volume energy'): include dG_volume.  No clear interpretation for this.\n\
-energy_type = 2 ('Complex energy'): include dG_assoc.  This is the NUPACK complex microstate energy, sans symmetry terms.\n\
-energy_type = 3 ('Tube energy'): include dG_volume + dG_assoc.  Summed over complexes, this is the system state energy.\n\
+energy_type = options.Energy_Type.Loop_energy    : [default] no volume or association terms included. So only loop energies remain.\n\
+energy_type = options.Energy_Type.Volume_energy  : include dG_volume. No clear interpretation for this.\n\
+energy_type = options.Energy_Type.Complex_energy : include dG_assoc. This is the NUPACK complex microstate energy, sans symmetry terms.\n\
+energy_type = options.Energy_Type.Tube_energy    : include dG_volume + dG_assoc. Summed over complexes, this is the system state energy.\n\
 \n\
 options = None [default]: Use the already initialized energy model.\n\
-options = ...: If not none, should be a multistrand.options.Options object, which will be used for initializing the energy model ONLY if there is not one already present.\n") },
-				{ "calculate_rate", (PyCFunction) System_calculate_rate, METH_VARARGS | METH_KEYWORDS,
-						PyDoc_STR(
-								" \
+options = ...: If not none, should be a multistrand.options.Options object, which will be used for initializing the energy model ONLY if there is not one already present.\n")
+	},
+	{ "calculate_rate", (PyCFunction) System_calculate_rate,
+	  METH_VARARGS | METH_KEYWORDS, PyDoc_STR(" \
 calculate_rate(start_energy, end_energy, options=None, joinflag=0)\n\
 Computes the rate of transition for the current kinetics model.\n\
 \n\
@@ -415,30 +414,29 @@ options = ...: If not none, should be a multistrand.options.Options object, whic
 \n\
 joinflag = 0 [default]: unimolecular transition\n\
 joinflag = 1: bimolecular join, passed energies are not relevant\n\
-joinflag = 2: bimolecular break, energies are relevant\n") },
-				{ "initialize_energy_model", (PyCFunction) System_initialize_energymodel, METH_VARARGS,
-						PyDoc_STR(
-								" \
+joinflag = 2: bimolecular break, energies are relevant\n")
+	},
+	{ "initialize_energy_model", (PyCFunction) System_initialize_energymodel,
+	  METH_VARARGS, PyDoc_STR(" \
 initialize_energy_model( options = None )\n\
 Initialize the Multistrand module's energy model using the options object given. If a model already exists, this will remove the old model and create a new one - useful for certain parameter changes, but should be avoided if possible. This function is NOT required to use other parts of the module - by default they will create the model if it's not found, or use the one already initialized; this adds control over exactly what model is being used.\n\n\
-options [default=None]: when no options object is passed, this removes the old energy model and does not create a new one.\n") },
-				{ "run_system", (PyCFunction) System_run_system, METH_VARARGS, PyDoc_STR(
-						" \
+options [default=None]: when no options object is passed, this removes the old energy model and does not create a new one.\n")
+	},
+	{ "run_system", (PyCFunction) System_run_system,
+	  METH_VARARGS, PyDoc_STR(" \
 run_system( options )\n\
-Run the system defined by the passed in Options object.\n") }, { NULL } /*Sentinel*/
-		};
+Run the system defined by the passed in Options object.\n")
+	},
+	{ NULL, NULL, 0, NULL } /*Sentinel*/
+};
 
-static struct PyModuleDef systemdef = {
-        PyModuleDef_HEAD_INIT,
-        "system",     /* m_name */
-        "Base module for holding System objects.",  /* m_doc */
-        -1,                  /* m_size */
-        System_methods,    /* m_methods */
-        NULL,                /* m_reload */
-        NULL,                /* m_traverse */
-        NULL,                /* m_clear */
-        NULL,                /* m_free */
-    };
+static struct PyModuleDef moduledef = {
+	PyModuleDef_HEAD_INIT,
+	.m_name = "system",
+	.m_doc = "Base module for holding System objects.",
+	.m_size = -1,
+	.m_methods = System_methods,
+};
 
 PyMODINIT_FUNC PyInit_system(void) {
 	PyObject *m;

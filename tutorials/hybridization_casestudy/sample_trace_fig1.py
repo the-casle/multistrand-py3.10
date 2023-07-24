@@ -16,7 +16,6 @@ from multistrand.experiment import standardOptions, makeComplex
     
 
 def printTrajectory(o):
-    
     seqstring = ""
     
     for i in range(len(o.full_trajectory)):
@@ -31,9 +30,7 @@ def printTrajectory(o):
         dGC = 0.0
         
         pairTypes = []
-        
-        for state in states: 
-            
+        for state in states:
             ids += [ str(state[2]) ]
             newseqs += [ state[3] ]  # extract the strand sequences in each complex (joined by "+" for multistranded complexes)
             structs += [ state[4] ]  # similarly extract the secondary structures for each complex
@@ -44,19 +41,16 @@ def printTrajectory(o):
 #             print "count is  " +  str(state[4].count("+"))
 #             print "join conc is " + str(o.join_concentration)
 #             print "dG-Complex is " + "%.2f" % dGC + " kcal/mol  for " + str(state[3]) 
-            
-            
+
         newseqstring = ' '.join(newseqs)  # make a space-separated string of complexes, to represent the whole tube system sequence
         tubestruct = ' '.join(structs)  # give the dot-paren secondary structure for the whole test tube
-                 
-        
+
         if not newseqstring == seqstring : 
             print(newseqstring)
             seqstring = newseqstring  # because strand order can change upon association of dissociation, print it when it changes        
 
-        print(tubestruct + ('   t=%.3f ns,  dG=%3.2f kcal/mol, dGC=%3.2f kcal/mol   ' % (time, dG, dGC))) 
+        print(f"{tubestruct}   t={time:.3f} ns,  dG={dG:3.2f} kcal/mol, dGC={dGC:3.2f} kcal/mol")
 
-        
 
 def doSims(strandSeq, numTraj=2):    
 
@@ -86,19 +80,14 @@ def doSims(strandSeq, numTraj=2):
 #     strand3 = Strand(name="s3", domains=[domain3])
 
     myComplex = makeComplex([seq1, seq2, seq3], struct)
-
     print(myComplex)
 
     o1.start_state = [myComplex]
-
     # Note: no stopping conditions
-    
     o1.initial_seed = 1777+6
-
     s = SimSystem(o1)
     s.start()
-    printTrajectory(o1)        
-        
+    printTrajectory(o1)
 
     
 # # The actual main method
@@ -106,23 +95,3 @@ if __name__ == '__main__':
     
     print(sys.argv)
     doSims( "GCGTTTCAC",1)
-         
-        
-        
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
