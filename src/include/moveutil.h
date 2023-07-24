@@ -106,7 +106,7 @@ namespace std {
 template<> struct hash<ExportData> {
 	size_t operator()(const ExportData& k) const {
 
-		return hash<string>()(k.sequence) ^ hash<string>()(k.structure) ^ hash<int>()(k.id);
+		return hash<string>()(k.sequence) ^ hash<string>()(k.structure) ^ hash<double>()(k.id);
 
 	}
 };
@@ -114,7 +114,7 @@ template<> struct hash<ExportData> {
 template<> struct hash<ExportTransition> {
 	size_t operator()(const ExportTransition& k) const {
 
-		return hash<ExportData>()(k.state1) ^ hash<ExportData>()(k.state2) ^ hash<int>()(k.type);
+		return hash<ExportData>()(k.state1) ^ hash<ExportData>()(k.state2) ^ hash<double>()(k.type);
 
 	}
 };

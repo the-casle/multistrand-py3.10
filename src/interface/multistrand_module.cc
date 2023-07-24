@@ -444,7 +444,7 @@ PyMODINIT_FUNC PyInit_system(void) {
 	if (PyType_Ready(&SimSystem_Type) < 0)
 		return m;
 
-	m = PyModule_Create(&systemdef);
+	m = PyModule_Create(&moduledef);
 	if (m == NULL)
 		return m;
 

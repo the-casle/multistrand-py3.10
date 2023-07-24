@@ -119,7 +119,7 @@ public:
 	SimOptions* simOptions;
 
 	// for co-transcriptional, save the curent amount of activated nucleotides
-	int numActiveNT = NULL;
+	int numActiveNT = 0;
 	// if inspection is used, all transitions occur at rate 1.0 /s
 	bool inspection = false;
 

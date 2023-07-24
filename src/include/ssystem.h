@@ -86,7 +86,7 @@ private:
 
 	PyObject *system_options = NULL;
 
-	long current_seed = NULL;
+	long current_seed = 0;
 	long simulation_mode;
 	long simulation_count_remaining;
 

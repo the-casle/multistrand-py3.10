@@ -33,10 +33,10 @@ help@multistrand.org
 /* These four prep functions return a new reference via Py_BuildValue, error checking and reference counting is the caller's responsibility. */
 
 /* Accessors (ref counting caller responsibility) */
-#define getStringAttr(obj, name, pyo) ((char *)PyUnicode_AsUTF8(pyo=PyObject_GetAttrString(obj, #name))
+#define getStringAttr(obj, name, pyo) (char *)PyUnicode_AsUTF8(pyo=PyObject_GetAttrString(obj, #name))
 #define getStringAttrReify(obj, name, pyo) PyUnicode_AsUTF8(pyo=_m_reify_GetAttrString(obj, #name))
 #define getListAttr(obj, name) PyObject_GetAttrString(obj, #name)
-#define getListAttrReify(obj, name) _m_reify_GetAttrString(obj, #name) # JAKE MERGE: Why are these functions needed?
+#define getListAttrReify(obj, name) _m_reify_GetAttrString(obj, #name) // JAKE MERGE: Why are these functions needed?
 
 /* List indexing (ref counting caller responsibility) */
 #define getStringItem(list, index) PyUnicode_AsUTF8(PyList_GET_ITEM(list, index))
@@ -135,9 +135,6 @@ help@multistrand.org
 
 #define printStatusLine_First_Bimolecular( obj,seed,com_type,com_time,frate,tag) \
   _m_pushList( obj, _m_prepStatusFirstTuple( seed, com_type, com_time, frate, (char *)(tag)), add_result_status_line_firststep )
-
-#define printComplexStateLine( obj, seed, id, names, sequence, structure, energy, enthalpy ) \
-  _m_pushList( obj, _m_prepComplexStateTuple( seed, id, names, sequence, structure, energy, enthalpy ), add_complex_state_line )
 
 #define printComplexStateLine( obj, seed, data ) \
   _m_pushList( obj, _m_prepComplexStateTuple( seed, data.id, data.names.c_str(), data.sequence.c_str(), data.structure.c_str(), data.energy, data.enthalpy  ), add_complex_state_line )
@@ -284,9 +281,6 @@ help@multistrand.org
 
 #define printStatusLine_First_Bimolecular( obj,seed,com_type,com_time,frate,tag) \
   _m_d_pushList( obj, _m_prepStatusFirstTuple( seed, com_type, com_time, frate, (char *)(tag)), add_result_status_line_firststep )
-
-#define printComplexStateLine( obj, seed, id, names, sequence, structure, energy, enthalpy ) \
-  _m_d_pushList( obj, _m_prepComplexStateTuple( seed, id, names, sequence, structure, energy, enthalpy ), add_complex_state_line )
 
 #define printComplexStateLine( obj, seed, data ) \
   _m_d_pushList( obj, _m_prepComplexStateTuple( seed, data.id, data.names.c_str(), data.sequence.c_str(), data.structure.c_str(), data.energy, data.enthalpy  ), add_complex_state_line )
