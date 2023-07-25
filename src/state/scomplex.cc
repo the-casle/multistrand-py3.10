@@ -13,6 +13,7 @@
 #include "scomplex.h"
 #include "simtimer.h"
 #include "simoptions.h"
+#include "basetype.h"
 
 #include <utility.h>
 
@@ -22,25 +23,29 @@ BaseCount emptyBaseCount;
 
 // JS: i'd like to optimize this lookup. It really should be just a bitwise
 //  or, and an array lookup, the extra function call annoys me.
-extern int baseLookup(char base);
+
+// JAKE: bruh what are you talking about this is called like 45 times total when initializing the energy system. This is not where you are getting a slowdown and I'm kinda annoyed
+// that you chose to use your time focussing on issues like this that made the project so convoluted for next to no actual speedup
+
+
+extern BaseType baseLookup(char base);
 
 StrandComplex::StrandComplex(char *seq, char *struc)
 {
 
 	char *tempseq = (char *)new char[strlen(seq) + 1];
 	char *tempstruct = (char *)new char[strlen(struc) + 1];
-	char *tempcseq = (char *)new char[strlen(seq) + 1];
+	BaseType *temp_bseq = (BaseType *)new BaseType[strlen(seq) + 1];
 	strcpy(tempseq, seq);
-	strcpy(tempcseq, seq);
 	strcpy(tempstruct, struc);
-	for (int loop = 0; loop < strlen(tempcseq); loop++)
-		tempcseq[loop] = baseLookup(tempcseq[loop]);
+	for (int loop = 0; loop < strlen(tempseq); loop++)
+		temp_bseq[loop] = baseLookup(tempseq[loop]);
 
 	beginLoop = NULL;
-	ordering = new StrandOrdering(tempseq, tempstruct, tempcseq);
+	ordering = new StrandOrdering(tempseq, tempstruct, temp_bseq);
 	delete[] tempseq;
 	delete[] tempstruct;
-	delete[] tempcseq;
+	delete[] temp_bseq;
 }
 
 StrandComplex::StrandComplex(char *seq, char *struc, class identList *id_list, bool debug)
@@ -48,29 +53,28 @@ StrandComplex::StrandComplex(char *seq, char *struc, class identList *id_list, b
 
 	char *tempseq = (char *)new char[strlen(seq) + 1];
 	char *tempstruct = (char *)new char[strlen(struc) + 1];
-	char *tempcseq = (char *)new char[strlen(seq) + 1];
+	BaseType *temp_bseq = (BaseType *)new BaseType[strlen(seq) + 1];
 	strcpy(tempseq, seq);
-	strcpy(tempcseq, seq);
 	strcpy(tempstruct, struc);
-	for (int loop = 0; loop < strlen(tempcseq); loop++)
+	for (int loop = 0; loop < strlen(tempseq); loop++)
 	{
-		tempcseq[loop] = baseLookup(tempcseq[loop]);
+		temp_bseq[loop] = baseLookup(tempseq[loop]);
 	}
 
 	if (debug) {
 		cout << "StrandComplex:" << endl;
 		printf(" seq='%s', cseq='", tempseq);
-		for (int i = 0; i < strlen(tempcseq); i++)
-			cout << (int) tempcseq[i] << ",";
+		for (int i = 0; i < strlen(tempseq); i++)
+			cout << (int) temp_bseq[i] << ",";
 		printf(" struct='%s'\n", tempstruct);
 		cout << flush;
 	}
 
 	beginLoop = NULL;
-	ordering = new StrandOrdering(tempseq, tempstruct, tempcseq, id_list);
+	ordering = new StrandOrdering(tempseq, tempstruct, temp_bseq, id_list);
 	delete[] tempseq;
 	delete[] tempstruct;
-	delete[] tempcseq;
+	delete[] temp_bseq;
 }
 
 StrandComplex::StrandComplex(StrandOrdering *newOrdering)
@@ -135,13 +139,13 @@ StrandComplex *StrandComplex::performComplexJoin(JoinCriteria crit, bool useArr,
 		cout << "Perform Complex Join 1/3 ***************" << std::endl;
 
 	StrandComplex **complexes = crit.complexes;
-	char *types = crit.types;
+	BaseType *types = crit.types;
 	int *index = crit.index;
 
 	OpenLoop *loops[2];
 	OpenLoop *new_loops[2] = {NULL, NULL};
 	StrandOrdering *new_ordering = NULL;
-	char *locations[2] = {NULL, NULL};
+	BaseType *locations[2] = {NULL, NULL};
 
 	if (debug)
 		cout << "Perform Complex Join 2/3 ***************" << std::endl;
@@ -246,13 +250,13 @@ StrandComplex *StrandComplex::doChoice(Move *move, SimTimer &timer, bool debug)
 		// 	 if cotranscriptional is active, print the distance from the origin.
 		// 	 this has to be done with pointer arithmatic, since we have not refactored this (yet).
 
-			uint64_t dist_left_bp = move->getAffected(0)->getLocation(move, 0) - ordering->first->thisCodeSeq;
+			uint64_t dist_left_bp = move->getAffected(0)->getLocation(move, 0) - ordering->first->thisBaseSeq;
 			uint64_t dist_right_bp = 0;
 
 			if (move->getType() & MOVE_CREATE){ // FD: test if we have a create-basepair move
-				dist_right_bp  =  move->getAffected(0)->getLocation(move, 1) -  ordering->first->thisCodeSeq;
+				dist_right_bp  =  move->getAffected(0)->getLocation(move, 1) -  ordering->first->thisBaseSeq;
 			} else if (move->getType() & MOVE_DELETE) { // FD: test if we have a delete-basepair move
-				dist_right_bp = move->getAffected(1)->getLocation(move, 1) -  ordering->first->thisCodeSeq;
+				dist_right_bp = move->getAffected(1)->getLocation(move, 1) -  ordering->first->thisBaseSeq;
 			}
 
 			// exit if one of the transitions are touching a frozen base
@@ -311,7 +315,8 @@ int StrandComplex::generateLoops(bool debug)
 	generateLoopsData *stacklist, *stacklisttail, *temp_intlist;
 	generateLoopsData *templist = NULL, *templisttail = NULL;
 	Loop *newLoop;
-	char *sequence, *structure, *charsequence;
+	char *structure, *charsequence;
+	BaseType *sequence;
 
 	if (debug)
 		cout << "Generating flat sequences." << endl << flush;
@@ -324,15 +329,15 @@ int StrandComplex::generateLoops(bool debug)
 
 	if (debug) {
 		printf(" Generating loops for: cseq='%s', seq='", charsequence);
-		for (int loop = 0; loop < strlen(sequence); loop++)
+		for (int loop = 0; loop < strlen(charsequence); loop++)
 			cout << (int) sequence[loop] << ",";
 		printf(" struct='%s'\n", structure);
-		cout << " strlen(sequence) = " << strlen(sequence) << endl << flush;
+		cout << " strlen(charsequence) = " << strlen(charsequence) << endl << flush;
 	}
 
-	int *pairlist = (int *) new int[strlen(sequence) + 1];
-	char *newstruc = (char *) new char[strlen(sequence) + 1];
-	char *newseq = (char *) new char[strlen(sequence) + 1];
+	int *pairlist = (int *) new int[strlen(charsequence) + 1];
+	char *newstruc = (char *) new char[strlen(charsequence) + 1];
+	BaseType *newseq = (BaseType *) new BaseType[strlen(charsequence) + 1];
 
 	stacklist = new generateLoopsData;
 	stacklist->data = -1;
@@ -343,7 +348,7 @@ int StrandComplex::generateLoops(bool debug)
 
 	strcpy(newstruc, structure);
 
-	for (int loop = 0; loop < strlen(sequence); loop++) {
+	for (int loop = 0; loop < strlen(charsequence); loop++) {
 		newseq[loop] = baseLookup(charsequence[loop]);
 		pairlist[loop] = -1;
 		if (structure[loop] == '(')
@@ -369,13 +374,13 @@ int StrandComplex::generateLoops(bool debug)
 
 	if (debug) {
 		cout << " pairlist='";
-		for (int loop = 0; loop < (strlen(sequence) + 1); loop++)
+		for (int loop = 0; loop < (strlen(charsequence) + 1); loop++)
 			cout << pairlist[loop] << ",";
 		cout << "'" << endl << " newstruc='";
-		for (int loop = 0; loop < (strlen(sequence) + 1); loop++)
+		for (int loop = 0; loop < (strlen(charsequence) + 1); loop++)
 			cout << newstruc[loop];
 		cout << "'" << endl << " newseq=";
-		for (int loop = 0; loop < (strlen(sequence) + 1); loop++)
+		for (int loop = 0; loop < (strlen(charsequence) + 1); loop++)
 			cout << (int) newseq[loop] << ",";
 		cout << "'" << endl << flush;
 	}
@@ -442,7 +447,7 @@ int StrandComplex::generateLoops(bool debug)
 		}
 
 		if (startpos >= 0)
-			if (sequence[startpos] == '_' || sequence[startpos] == '+')
+			if (sequence[startpos] == baseInvalid || charsequence[startpos] == '+')
 			{
 				//	    printf("Open Loop at olflag = %d\n",startpos);
 				if (olflag != -1) // error, we shouldn't have more than one open loop specifier in a loop.
@@ -455,9 +460,9 @@ int StrandComplex::generateLoops(bool debug)
 
 		// Current problem: last item generated will be the initial loop (the one which started this computation. Identify and eliminate addition/creation.
 		// 2/11/04. START HERE - Resolved, see comment below
-		while (traverse != startpos && traverse < strlen(sequence))
+		while (traverse != startpos && traverse < strlen(charsequence))
 		{
-			if (sequence[traverse] == '_' || sequence[traverse] == '+')
+			if (sequence[traverse] == baseInvalid || charsequence[traverse] == '+')
 			{
 				//printf("Open Loop at olflag = %d\n",traverse);
 				if (olflag != -1) // error, we shouldn't have more than one open loop specifier in a loop.
@@ -501,12 +506,12 @@ int StrandComplex::generateLoops(bool debug)
 		if (olflag != -1) {			// 'internal' open loop
 
 			int *OL_sidelengths;
-			char **OL_sequences;
+			BaseType **OL_sequences;
 
 			openloopcount = 0;
 			// listlength is at least one.
 			OL_sidelengths = (int *)new int[listlength + 1];
-			OL_sequences = (char **)new char *[listlength + 1];
+			OL_sequences = (BaseType **)new BaseType *[listlength + 1];
 
 			// deletion for these is handled in the OpenLoop destructor.
 			temp_intlist = templist;
@@ -577,16 +582,16 @@ int StrandComplex::generateLoops(bool debug)
 			ordering->addOpenLoop((OpenLoop *)newLoop, olflag);
 			olflag = -1;
 		}
-		else if (traverse > strlen(sequence) - 1) // Open Loop
+		else if (traverse > strlen(charsequence) - 1) // Open Loop
 		// Will need another classifier here. (for non initiating open loops) (CHECK: This should now be covered by the above case.)
 		{
 			int *OL_sidelengths;
-			char **OL_sequences;
+			BaseType **OL_sequences;
 			if (listlength != 0)
 			{
 
 				OL_sidelengths = (int *)new int[listlength + 1];
-				OL_sequences = (char **)new char *[listlength + 1];
+				OL_sequences = (BaseType **)new BaseType *[listlength + 1];
 				// deletion for these is handled in the OpenLoop destructor.
 				temp_intlist = templist;
 				/*	      OL_pairtypes[0] = stacklist->pairtype;
@@ -616,7 +621,7 @@ int StrandComplex::generateLoops(bool debug)
 			{
 
 				OL_sidelengths = (int *)new int[listlength + 1];
-				OL_sequences = (char **)new char *[listlength + 1];
+				OL_sequences = (BaseType **)new BaseType *[listlength + 1];
 				OL_sidelengths[0] = seqlen;
 				OL_sequences[0] = ordering->convertIndex(-1); // this feels very dangerous (need to think about it more)
 				newLoop = new OpenLoop(0, OL_sidelengths, OL_sequences); // open chain
@@ -626,9 +631,9 @@ int StrandComplex::generateLoops(bool debug)
 		else if (listlength > 2) // MultiLoop
 		{
 			int *ML_sidelengths;
-			char **ML_sequences;
+			BaseType **ML_sequences;
 			ML_sidelengths = (int *)new int[listlength];
-			ML_sequences = (char **)new char *[listlength];
+			ML_sequences = (BaseType **)new BaseType *[listlength];
 			// deletion for these is handled in the OpenLoop destructor.
 			temp_intlist = templist;
 			// JS: Possibly a problem here, need to make sure sequences get paired correctly with lengths. FIXME

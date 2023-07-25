@@ -12,6 +12,7 @@
 
 #include "simoptions.h"
 #include "options.h"
+#include "basetype.h"
 
 // For json
 #include "rapidjson/document.h"
@@ -38,7 +39,7 @@ extern  int pairtypes[5][5];
 extern  int basepair_sw[8];
 
 // helper function to convert to numerical base format.
-extern int baseLookup(char base);
+extern BaseType baseLookup(char base);
 
 double NupackEnergyModel::returnRate(double start_energy, double end_energy, int enth_entr_toggle) {
 
@@ -154,19 +155,19 @@ double NupackEnergyModel::BulgeEnergy(int i, int j, int p, int q, int bulgesize,
 	return energy;
 }
 
-double NupackEnergyModel::InteriorEnergy(char *seq1, char *seq2, int size1, int size2) {
+double NupackEnergyModel::InteriorEnergy(BaseType *seq1, BaseType *seq2, int size1, int size2) {
 
 	return this->InteriorEnergy(seq1, seq2, size1, size2, internal_dG);
 
 }
 
-double NupackEnergyModel::InteriorEnthalpy(char *seq1, char *seq2, int size1, int size2) {
+double NupackEnergyModel::InteriorEnthalpy(BaseType *seq1, BaseType *seq2, int size1, int size2) {
 
 	return this->InteriorEnergy(seq1, seq2, size1, size2, internal_dH);
 
 }
 
-double NupackEnergyModel::InteriorEnergy(char *seq1, char *seq2, int size1, int size2, internal_energies& internal) {
+double NupackEnergyModel::InteriorEnergy(BaseType *seq1, BaseType *seq2, int size1, int size2, internal_energies& internal) {
 
 	double energy, ninio;
 	int type1 = pairtypes[seq1[0]][seq2[size2 + 1]] - 1;
@@ -231,19 +232,19 @@ double NupackEnergyModel::InteriorEnergy(char *seq1, char *seq2, int size1, int 
 	return energy;
 }
 
-double NupackEnergyModel::HairpinEnergy(char *seq, int size) {
+double NupackEnergyModel::HairpinEnergy(BaseType *seq, int size) {
 
 	return HairpinEnergy(seq, size, hairpin_dG);
 
 }
 
-double NupackEnergyModel::HairpinEnthalpy(char *seq, int size) {
+double NupackEnergyModel::HairpinEnthalpy(BaseType *seq, int size) {
 
 	return HairpinEnergy(seq, size, hairpin_dH);
 
 }
 
-double NupackEnergyModel::HairpinEnergy(char *seq, int size, hairpin_energies& hairpin) {
+double NupackEnergyModel::HairpinEnergy(BaseType *seq, int size, hairpin_energies& hairpin) {
 
 	double energy = 0.0;
 	int lookup_index = 0;
@@ -283,19 +284,19 @@ double NupackEnergyModel::HairpinEnergy(char *seq, int size, hairpin_energies& h
 	return energy;
 }
 
-double NupackEnergyModel::MultiloopEnergy(int size, int *sidelen, char **sequences) {
+double NupackEnergyModel::MultiloopEnergy(int size, int *sidelen, BaseType **sequences) {
 
 	return MultiloopEnergy(size, sidelen, sequences, multiloop_dG);
 
 }
 
-double NupackEnergyModel::MultiloopEnthalpy(int size, int *sidelen, char **sequences) {
+double NupackEnergyModel::MultiloopEnthalpy(int size, int *sidelen, BaseType **sequences) {
 
 	return MultiloopEnergy(size, sidelen, sequences, multiloop_dH);
 
 }
 
-double NupackEnergyModel::MultiloopEnergy(int size, int *sidelen, char **sequences, multiloop_energies& multiloop) {
+double NupackEnergyModel::MultiloopEnergy(int size, int *sidelen, BaseType **sequences, multiloop_energies& multiloop) {
 
 	// no dangle terms yet, this is equiv to dangles = 0;
 	int totallength = 0;
@@ -380,19 +381,19 @@ double NupackEnergyModel::MultiloopEnergy(int size, int *sidelen, char **sequenc
 
 }
 
-double NupackEnergyModel::OpenloopEnergy(int size, int *sidelen, char **sequences) {
+double NupackEnergyModel::OpenloopEnergy(int size, int *sidelen, BaseType **sequences) {
 
 	return OpenloopEnergy(size, sidelen, sequences, multiloop_dG);
 
 }
 
-double NupackEnergyModel::OpenloopEnthalpy(int size, int *sidelen, char **sequences) {
+double NupackEnergyModel::OpenloopEnthalpy(int size, int *sidelen, BaseType **sequences) {
 
 	return OpenloopEnergy(size, sidelen, sequences, multiloop_dH);
 
 }
 
-double NupackEnergyModel::OpenloopEnergy(int size, int *sidelen, char **sequences, multiloop_energies& multiloop) {
+double NupackEnergyModel::OpenloopEnergy(int size, int *sidelen, BaseType **sequences, multiloop_energies& multiloop) {
 
 	if (simOptions->debug)
 		cout << "Computing OpenLoopEnergy, size = " << size << endl;
@@ -480,7 +481,7 @@ double NupackEnergyModel::OpenloopEnergy(int size, int *sidelen, char **sequence
 
 NupackEnergyModel::NupackEnergyModel(PyObject* energy_options) :
 
-		log_loop_penalty_37(107.856), kinetic_rate_method(RATE_METHOD_KAWASAKI), bimolecular_penalty(1.96), kBoltzmann(.00198717), current_temp(310.15) // Check references for this loop penalty term.
+		log_loop_penalty_37(107.856), bimolecular_penalty(1.96), kinetic_rate_method(RATE_METHOD_KAWASAKI), kBoltzmann(.00198717), current_temp(310.15) // Check references for this loop penalty term.
 {
 
 	simOptions = new PSimOptions(energy_options);
@@ -497,7 +498,7 @@ NupackEnergyModel::NupackEnergyModel(PyObject* energy_options) :
 }
 
 NupackEnergyModel::NupackEnergyModel(SimOptions* options) :
-		log_loop_penalty_37(107.856), kinetic_rate_method(RATE_METHOD_KAWASAKI), bimolecular_penalty(1.96), kBoltzmann(.00198717), current_temp(310.15) // Check references for this loop penalty term.
+		log_loop_penalty_37(107.856), bimolecular_penalty(1.96), kinetic_rate_method(RATE_METHOD_KAWASAKI), kBoltzmann(.00198717), current_temp(310.15) // Check references for this loop penalty term.
 {
 	simOptions = options;
 	processOptions();
@@ -604,7 +605,7 @@ void NupackEnergyModel::processOptions() {
 		std::string paramPath = "/source/parameters/";
 		fp = openFiles(nupackhome, paramPath, file, 0);
 	}
-    char buffer[65536];
+    char buffer[65536];  // JAKE MERGE: What would be a better size for buffer/better way to read
     rapidjson::FileReadStream is(fp, buffer, sizeof(buffer));
 
     rapidjson::Document d;
@@ -846,11 +847,12 @@ void NupackEnergyModel::internal_set_interior_2_2(rapidjson::Document &d) {
 void NupackEnergyModel::internal_set_dangle_5(rapidjson::Document &d) {
     // X2 X1 Y
     int loop, loop2;
-    for (loop = 0; loop < PAIRS_NUPACK; loop++)
-        for (loop2 = 0; loop2 < BASES; loop2++)
+    for (loop = 0; loop < PAIRS_NUPACK; loop++){
+        for (loop2 = 0; loop2 < BASES; loop2++){
             multiloop_dG.dangle_5[loop][loop2] = 0.0;
             multiloop_dH.dangle_5[loop][loop2] = 0.0;
-
+        }
+    }
     for (loop = 0; loop < PAIRS_NUPACK; loop++){
          for (loop2 = 1; loop2 < BASES; loop2++){
             char name[] = {basepairString[loop + 1][2], basepairString[loop + 1][0], baseTypeString[loop2][0], '\0'};
@@ -864,10 +866,12 @@ void NupackEnergyModel::internal_set_dangle_5(rapidjson::Document &d) {
 void NupackEnergyModel::internal_set_dangle_3(rapidjson::Document &d) {
     // This reads as Y X2 X1
     int loop, loop2;
-    for (loop = 0; loop < PAIRS_NUPACK; loop++)
-        for (loop2 = 0; loop2 < BASES; loop2++)
+    for (loop = 0; loop < PAIRS_NUPACK; loop++){
+        for (loop2 = 0; loop2 < BASES; loop2++){
             multiloop_dG.dangle_3[loop][loop2] = 0.0;
             multiloop_dH.dangle_3[loop][loop2] = 0.0;
+        }
+    }
 
     for (loop = 0; loop < PAIRS_NUPACK; loop++){
          for (loop2 = 1; loop2 < BASES; loop2++){
@@ -960,11 +964,14 @@ void NupackEnergyModel::internal_set_hairpin_mismatch(rapidjson::Document &d) {
     //int j = ((baseLookup(name[2]) - 1) * 2) + (baseLookup(name[1]) - 1) - 3; // col
     // bottom right, upper right, upper left, bottom left
     int loop, loop2, loop3;
-    for (loop = 0; loop < PAIRS_NUPACK; loop++)
-        for (loop2 = 0; loop2 < BASES; loop2++)
-            for (loop3 = 0; loop3 < BASES; loop3++)
+    for (loop = 0; loop < PAIRS_NUPACK; loop++){
+        for (loop2 = 0; loop2 < BASES; loop2++){
+            for (loop3 = 0; loop3 < BASES; loop3++){
                 hairpin_dG.mismatch[loop][loop2][loop3] = 0;
                 hairpin_dH.mismatch[loop][loop2][loop3] = 0;
+            }
+        }
+    }
     for (rapidjson::Value::ConstMemberIterator itr = d["dG"]["hairpin_mismatch"].MemberBegin(); itr != d["dG"]["hairpin_mismatch"].MemberEnd(); ++itr){
         string name = itr->name.GetString();
         int j = ((baseLookup(name[2]) - 1) * 2) + (baseLookup(name[1]) - 1) - 3; // col
@@ -980,11 +987,14 @@ void NupackEnergyModel::internal_set_hairpin_mismatch(rapidjson::Document &d) {
 void NupackEnergyModel::internal_set_interior_loop_mismatch(rapidjson::Document &d) {
     // interior mismatch again maybe rework this
     int loop, loop2, loop3;
-    for (loop = 0; loop < BASES; loop++)
-        for (loop2 = 0; loop2 < BASES; loop2++)
-            for (loop3 = 0; loop3 < PAIRS_NUPACK; loop3++)
+    for (loop = 0; loop < BASES; loop++){
+        for (loop2 = 0; loop2 < BASES; loop2++){
+            for (loop3 = 0; loop3 < PAIRS_NUPACK; loop3++){
                 internal_dG.mismatch[loop][loop2][loop3] = 0;
                 internal_dH.mismatch[loop][loop2][loop3] = 0;
+            }
+        }
+    }
     for (rapidjson::Value::ConstMemberIterator itr = d["dG"]["interior_mismatch"].MemberBegin(); itr != d["dG"]["interior_mismatch"].MemberEnd(); ++itr){
         string name = itr->name.GetString();
         int j = ((baseLookup(name[2]) - 1) * 2) + (baseLookup(name[1]) - 1) - 3; // col

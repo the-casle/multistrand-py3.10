@@ -14,6 +14,7 @@ help@multistrand.org
 #include "move.h"
 #include "moveutil.h"
 //#include "simtimer.h"
+#include "basetype.h"
 
 using std::vector;
 
@@ -52,10 +53,10 @@ public:
 	virtual void generateDeleteMoves(void) = 0;
 	virtual Move *getChoice(SimTimer& timer, Loop *from) = 0;
 	virtual double doChoice(Move *move, Loop **returnLoop) = 0;
-	virtual char *getLocation(Move *move, int index) =0;
-	virtual char *verifyLoop(char *incoming_sequence, Loop *from) =0;
+	virtual BaseType *getLocation(Move *move, int index) =0;
+	virtual BaseType *verifyLoop(BaseType *incoming_sequence, Loop *from) =0;
 	virtual string typeInternalsToString(void) = 0;
-	virtual void printMove(Loop *comefrom, char *structure_p, char *seq_p) = 0;
+	virtual void printMove(Loop *comefrom, char *structure_p, BaseType *seq_p) = 0;
 	Loop *getAdjacent(int index);
 	int getCurAdjacent(void);
 	int getNumAdjacent(void);
@@ -110,18 +111,18 @@ public:
 	void generateDeleteMoves(void);
 	Move *getChoice(SimTimer& timer, Loop *from);
 	double doChoice(Move *move, Loop **returnLoop);
-	void printMove(Loop *comefrom, char *structure_p, char *seq_p);
-	char *getLocation(Move *move, int index);
-	char *verifyLoop(char *incoming_sequence,  Loop *from);
+	void printMove(Loop *comefrom, char *structure_p, BaseType *seq_p);
+	BaseType *getLocation(Move *move, int index);
+	BaseType *verifyLoop(BaseType *incoming_sequence,  Loop *from);
 	friend RateArr Loop::generateDeleteMoveRate(Loop *start, Loop *end);
 	friend Loop * Loop::performDeleteMove(Move *move);
 	friend void Loop::performComplexSplit(Move *move, Loop **firstOpen, Loop **secondOpen);
 	StackLoop(void);
-	StackLoop(char *seq1, char *seq2, Loop *left = NULL, Loop *right = NULL);
+	StackLoop(BaseType *seq1, BaseType *seq2, Loop *left = NULL, Loop *right = NULL);
 	string typeInternalsToString(void);
 
 private:
-	char *seqs[2];
+	BaseType *seqs[2];
 };
 
 class HairpinLoop: public Loop {
@@ -132,12 +133,12 @@ public:
 	void generateDeleteMoves(void);
 	Move *getChoice(SimTimer& timer, Loop *from);
 	double doChoice(Move *move, Loop **returnLoop);
-	void printMove(Loop *comefrom, char *structure_p, char *seq_p);
-	char *getLocation(Move *move, int index);
-	char *verifyLoop(char *incoming_sequence,  Loop *from);
+	void printMove(Loop *comefrom, char *structure_p, BaseType *seq_p);
+	BaseType *getLocation(Move *move, int index);
+	BaseType *verifyLoop(BaseType *incoming_sequence,  Loop *from);
 
 	HairpinLoop(void);
-	HairpinLoop( int size, char *hairpin_sequence, Loop *previous = NULL);
+	HairpinLoop( int size, BaseType *hairpin_sequence, Loop *previous = NULL);
 	friend RateArr Loop::generateDeleteMoveRate(Loop *start, Loop *end);
 	friend Loop * Loop::performDeleteMove(Move *move);
 	friend void Loop::performComplexSplit(Move *move, Loop **firstOpen, Loop **secondOpen);
@@ -145,7 +146,7 @@ public:
 
 private:
 	int hairpinsize;
-	char *hairpin_seq;
+	BaseType *hairpin_seq;
 };
 
 class BulgeLoop: public Loop {
@@ -156,11 +157,11 @@ public:
 	void generateDeleteMoves(void);
 	Move *getChoice(SimTimer& timer, Loop *from);
 	double doChoice(Move *move, Loop **returnLoop);
-	void printMove(Loop *comefrom, char *structure_p, char *seq_p);
-	char *getLocation(Move *move, int index);
-	char *verifyLoop(char *incoming_sequence, Loop *from);
+	void printMove(Loop *comefrom, char *structure_p, BaseType *seq_p);
+	BaseType *getLocation(Move *move, int index);
+	BaseType *verifyLoop(BaseType *incoming_sequence, Loop *from);
 	BulgeLoop(void);
-	BulgeLoop(int size1, int size2, char *bulge_sequence1, char *bulge_sequence2, Loop *left = NULL, Loop *right = NULL);
+	BulgeLoop(int size1, int size2, BaseType *bulge_sequence1, BaseType *bulge_sequence2, Loop *left = NULL, Loop *right = NULL);
 	friend Loop * Loop::performDeleteMove(Move *move);
 	friend RateArr Loop::generateDeleteMoveRate(Loop *start, Loop *end);
 	friend void Loop::performComplexSplit(Move *move, Loop **firstOpen, Loop **secondOpen);
@@ -168,7 +169,7 @@ public:
 
 private:
 	int bulgesize[2];
-	char *bulge_seq[2];
+	BaseType *bulge_seq[2];
 };
 
 class InteriorLoop: public Loop {
@@ -179,11 +180,11 @@ public:
 	void generateDeleteMoves(void);
 	Move *getChoice(SimTimer& timer, Loop *from);
 	double doChoice(Move *move, Loop **returnLoop);
-	void printMove(Loop *comefrom, char *structure_p, char *seq_p);
-	char *getLocation(Move *move, int index);
-	char *verifyLoop(char *incoming_sequence,  Loop *from);
+	void printMove(Loop *comefrom, char *structure_p, BaseType *seq_p);
+	BaseType *getLocation(Move *move, int index);
+	BaseType *verifyLoop(BaseType *incoming_sequence,  Loop *from);
 	InteriorLoop(void);
-	InteriorLoop(int size1, int size2, char *int_seq1, char *int_seq2, Loop *left = NULL, Loop *right = NULL);
+	InteriorLoop(int size1, int size2, BaseType *int_seq1, BaseType *int_seq2, Loop *left = NULL, Loop *right = NULL);
 
 	friend Loop * Loop::performDeleteMove(Move *move);
 	friend RateArr Loop::generateDeleteMoveRate(Loop *start, Loop *end);
@@ -192,7 +193,7 @@ public:
 
 private:
 	int sizes[2];
-	char *int_seq[2];
+	BaseType *int_seq[2];
 };
 
 class MultiLoop: public Loop {
@@ -203,11 +204,11 @@ public:
 	void generateDeleteMoves(void);
 	Move *getChoice(SimTimer& timer, Loop *from);
 	double doChoice(Move *move, Loop **returnLoop);
-	void printMove(Loop *comefrom, char *structure_p, char *seq_p);
-	char *getLocation(Move *move, int index);
-	char *verifyLoop(char *incoming_sequence, Loop *from);
+	void printMove(Loop *comefrom, char *structure_p, BaseType *seq_p);
+	BaseType *getLocation(Move *move, int index);
+	BaseType *verifyLoop(BaseType *incoming_sequence, Loop *from);
 	MultiLoop(void);
-	MultiLoop(int branches, int *sidelengths, char **sequences);
+	MultiLoop(int branches, int *sidelengths, BaseType **sequences);
 	~MultiLoop(void);
 
 	friend RateArr Loop::generateDeleteMoveRate(Loop *start, Loop *end);
@@ -217,7 +218,7 @@ public:
 
 private:
 	int *sidelen;
-	char **seqs;
+	BaseType **seqs;
 };
 
 class OpenLoop: public Loop {
@@ -228,9 +229,9 @@ public:
 	void generateDeleteMoves(void);
 	Move *getChoice(SimTimer& timer, Loop *from);
 	double doChoice(Move *move, Loop **returnLoop);
-	void printMove(Loop *comefrom, char *structure_p, char *seq_p);
-	char *getLocation(Move *move, int index);
-	char *verifyLoop(char *incoming_sequence,  Loop *from);
+	void printMove(Loop *comefrom, char *structure_p, BaseType *seq_p);
+	BaseType *getLocation(Move *move, int index);
+	BaseType *verifyLoop(BaseType *incoming_sequence,  Loop *from);
 
 	// OpenLoop::getFreeBases returns the base composition information for the
 	//   open loop. Return form is a pointer to an array of size 5, containing
@@ -247,19 +248,19 @@ public:
 	HalfContext getHalfContext(int, int);
 
 	// check for cotranscriptional folding.
-	bool nucleotideIsActive(const char* sequence, const char* initial, const int pos);
-	bool nucleotideIsActive(const char* sequence, const char* initial, const int pos1, const int pos2);
+	bool nucleotideIsActive(const BaseType* sequence, const BaseType* initial, const int pos);
+	bool nucleotideIsActive(const BaseType* sequence, const BaseType* initial, const int pos1, const int pos2);
 
-	char* getBase(char type, int index);
-	char* getBase(char type, int index, HalfContext);
+	BaseType* getBase(char type, int index);
+	BaseType* getBase(char type, int index, HalfContext);
 
 	OpenLoop(void);
-	OpenLoop(int branches,  int *sidelengths, char **sequences);
+	OpenLoop(int branches,  int *sidelengths, BaseType **sequences);
 	~OpenLoop(void);
 	friend RateArr Loop::generateDeleteMoveRate(Loop *start, Loop *end);
 	friend Loop * Loop::performDeleteMove(Move *move);
 	friend void Loop::performComplexSplit(Move *move, Loop **firstOpen, Loop **secondOpen);
-	static void performComplexJoin(OpenLoop **oldLoops, OpenLoop **newLoops, char *types, int *index, HalfContext[], bool);
+	static void performComplexJoin(OpenLoop **oldLoops, OpenLoop **newLoops, BaseType *types, int *index, HalfContext[], bool);
 	string typeInternalsToString(void);
 	void parseLocalContext(int);
 
@@ -273,7 +274,7 @@ public:
 private:
 
 	int *sidelen;
-	char **seqs;
+	BaseType **seqs;
 
 
 

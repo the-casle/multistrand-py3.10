@@ -15,6 +15,7 @@
 #include <sstream>
 #include "move.h"
 #include <energymodel.h>
+#include "basetype.h"
 
 char* utility::copyToCharArray(string& myString) {
 
@@ -25,7 +26,7 @@ char* utility::copyToCharArray(string& myString) {
 
 }
 
-string utility::sequenceToString(char* sequence, int size) {
+string utility::sequenceToString(BaseType* sequence, int size) {
 
 	// the first and final character is the paired base -- adjust the print for this.
 

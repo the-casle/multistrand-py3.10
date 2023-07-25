@@ -18,6 +18,8 @@
 #include <moveutil.h>
 #include <assert.h>
 
+#include "basetype.h"
+
 typedef std::vector<int> intvec;
 typedef std::vector<int>::iterator intvec_it;
 
@@ -554,7 +556,8 @@ JoinCriteria SComplexList::findJoinNucleotides(BaseType base, int choice, BaseCo
 
 	JoinCriteria crit;
 
-	int otherBase = 5 - (int) base;
+    assert((int) base > 0);
+    BaseType otherBase = static_cast<BaseType>(5 - (int) base);
 
 	crit.complexes[0] = temp->thisComplex;
 	crit.types[0] = otherBase;

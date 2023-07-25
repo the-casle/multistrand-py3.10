@@ -140,7 +140,7 @@ struct JoinCriteria {
 	friend std::ostream& operator<<(std::ostream&, JoinCriteria&);
 
 	StrandComplex* complexes[2] = { NULL, NULL };
-	char types[2] = { 0, 0 };
+	BaseType types[2] = {baseInvalid, baseInvalid};
 	int index[2] = { 0, 0 };
 
 	// arrhenius rates only
