@@ -189,13 +189,7 @@ void PSimOptions::generateComplexes(PyObject *alternate_start, long current_seed
 
 	myComplexes = new vector<complex_input>(0); // wipe the pointer to the previous object;
 
-	PyObject *py_start_state = NULL, *py_complex = NULL;
-	PyObject *py_seq = NULL, *py_struc = NULL;
-	PyObject *py_err = NULL;
-
 	if (myComplexes->size() == 0) {
-
-		complex_input *tempcomplex = NULL;
 		const char *sequence, *structure;
 		class identList *id;
 		int start_count;
@@ -211,7 +205,7 @@ void PSimOptions::generateComplexes(PyObject *alternate_start, long current_seed
 		if (py_start_state != Py_None)
 			// doesn't need reference counting for this size call.
 			// the getlistattr call we decref later.
-			start_count = PyList_GET_SIZE(py_start_state);
+			start_count = static_cast<int>(PyList_GET_SIZE(py_start_state));
 		else
 			start_count = 0;
 

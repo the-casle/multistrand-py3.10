@@ -288,8 +288,6 @@ static PyObject *System_calculate_energy(PyObject *self, PyObject *args) {
 }
 
 static PyObject *System_calculate_rate(PyObject *self, PyObject *args, PyObject *keywds) {
-
-	SimulationSystem *temp = NULL;
 	PyObject *options_object = NULL;
 	PyObject *rate;
 	double drate = -1.0;
@@ -439,7 +437,7 @@ static struct PyModuleDef moduledef = {
 };
 
 PyMODINIT_FUNC PyInit_system(void) {
-	PyObject *m;
+	PyObject *m = Py_None;
 	/* Finalize the simulation system object type */
 	if (PyType_Ready(&SimSystem_Type) < 0)
 		return m;

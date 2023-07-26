@@ -28,9 +28,9 @@ orderingList::orderingList(int insize, int n_id, char *inTag, char *inSeq, BaseT
 	// ???
 	thisTag = new char[strlen(inTag) + 1];
 	thisSeq = new char[size + 1];
-	codeSeqForOpenLoop = new BaseType[size + 1]; // the +1 is for below not a null terminating char or something
-	thisBaseSeq = &codeSeqForOpenLoop[1]; // open loop shenanigans. We are creating an openloop wrapper as the
-	// Open loop is indexed at -1 which can cause some issues
+	baseSeqWrapper = new BaseType[size + 1]; // the +1 is important not a null terminating char
+	thisBaseSeq = &baseSeqWrapper[1]; // open loop shenanigans. We reference into the 2nd element of the wrapper since
+	// Open loop can index at -1 which can cause some issues
 	thisStruct = new char[size + 1];
 
 	assert(thisTag != NULL);
@@ -38,15 +38,16 @@ orderingList::orderingList(int insize, int n_id, char *inTag, char *inSeq, BaseT
 	assert(thisBaseSeq != NULL);
 	assert(thisStruct != NULL);
 
-	strncpy(thisTag, inTag, strlen(inTag) + 1);
+	strncpy(thisTag, inTag, (int)strlen(inTag) + 1);
 	strncpy(thisSeq, inSeq, size);
 	strncpy(thisStruct, inStruct, size);
 
 	copy(inBaseSeq, inBaseSeq + size, thisBaseSeq);
 
+
 	thisSeq[size] = '\0';
 	thisStruct[size] = '\0';
-	codeSeqForOpenLoop[0] = baseInvalid;
+	baseSeqWrapper[0] = baseInvalid;
 
 	next = prev = NULL;
 	thisLoop = NULL;
@@ -58,8 +59,8 @@ orderingList::~orderingList(void) {
 		delete[] thisTag;
 	if (thisSeq != NULL)
 		delete[] thisSeq;
-	if (codeSeqForOpenLoop != NULL)
-		delete[] codeSeqForOpenLoop;
+	if (baseSeqWrapper != NULL)
+		delete[] baseSeqWrapper;
 	if (thisStruct != NULL)
 		delete[] thisStruct;
 	next = prev = NULL;
@@ -209,7 +210,7 @@ StrandOrdering::StrandOrdering(char *in_seq, char *in_structure, BaseType *in_bs
 			if (strand_counter == 0 && sflag == 0)
 				printf("Unconnected strand in initialized complex. Strandordering.cc\n");
 			assert(traverse != NULL);
-			new_elem = new orderingList(strand_size, traverse->uid, traverse->id, &in_seq[index - strand_size], &in_bseq[index - strand_size],
+			new_elem = new orderingList(strand_size, static_cast<int>(traverse->uid), traverse->id, &in_seq[index - strand_size], &in_bseq[index - strand_size],
 					&in_structure[index - strand_size]);
 			traverse = traverse->next;
 			// TODO: do i want orderinglist to be circular? does it help anything?
@@ -237,7 +238,7 @@ StrandOrdering::StrandOrdering(char *in_seq, char *in_structure, BaseType *in_bs
 	if (in_seq[index - 1] != '+') {
 		count++;
 		assert(traverse != NULL);
-		new_elem = new orderingList(strand_size, traverse->uid, traverse->id, &in_seq[index - strand_size], &in_bseq[index - strand_size],
+		new_elem = new orderingList(strand_size, static_cast<int>(traverse->uid), traverse->id, &in_seq[index - strand_size], &in_bseq[index - strand_size],
 				&in_structure[index - strand_size]);
 		traverse = traverse->next;
 
@@ -651,7 +652,6 @@ void StrandOrdering::setSeqStruc(void) {
 	for (index = 0; index < count; index++, traverse = traverse->next)
 		totallength += traverse->size;
 	totallength += count - 1;
-	//  printf("Total sequence length w/breaks: %d\n",totallength);
 
 	for (index = 0, traverse = first; index < count; index++, traverse = traverse->next) {
 
@@ -695,7 +695,7 @@ char *StrandOrdering::getStrandNames(void) {
 		return strandnames;
 
 	for (traverse = first; traverse != NULL; traverse = traverse->next) {
-		size += strlen(traverse->thisTag) + 1;
+		size += static_cast<int>(strlen(traverse->thisTag)) + 1;
 		size += 8;  // temp adjustment for unique ids.
 	}
 

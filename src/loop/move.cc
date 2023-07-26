@@ -42,7 +42,8 @@ std::ostream& operator<<(std::ostream& ss, RateEnv& env) {
 
 	}
 
-	ss << moveutil::primeToDesc(env.arrType);
+	ss << moveutil::primeToDesc(int(env.arrType)); // JAKE MERGE: So there's a lot of doubles relating to the arrType
+	// But I see hints that the value is treated as integers. Would it make more sense for it to be a long?
 	ss << "  " << env.rate << "   ";
 
 	return ss;
@@ -158,7 +159,7 @@ int Move::getType(void) {
 	return type;
 }
 
-int Move::getArrType(void) {
+double Move::getArrType(void) {
 	return rate.arrType;
 }
 
@@ -411,7 +412,7 @@ double MoveContainer::getRate(void) {
 	return totalrate;
 }
 
-uint16_t MoveList::getCount(void) {
+int MoveList::getCount(void) {
 
 	return moves_index + del_moves_index;
 

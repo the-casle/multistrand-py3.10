@@ -320,6 +320,11 @@ static inline bool _m_testLongAttr(PyObject *obj, const char *attrname, const ch
     return (local_val < value);
   if (test[0] == '>')
     return (local_val > value);
+  else{
+    fprintf(stderr, "Mismatching input, options.h\n");
+    exit(1);
+  }
+
 }
 
 #ifdef DEBUG_MACROS

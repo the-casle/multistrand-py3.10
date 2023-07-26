@@ -13,6 +13,7 @@
 #include <map>
 #include <sequtil.h>
 #include <cstdint>
+#include "basetype.h"
 
 using std::vector;
 using std::string;
@@ -157,7 +158,7 @@ struct OpenInfo {
 public:
 	friend std::ostream& operator<<(std::ostream&, OpenInfo&);
 	void clear(void);
-	void increment(QuartContext, char, QuartContext);
+	void increment(QuartContext, BaseType, QuartContext);
 	void increment(HalfContext, BaseCount&);
 	void increment(OpenInfo&);
 

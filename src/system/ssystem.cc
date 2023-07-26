@@ -485,7 +485,6 @@ void SimulationSystem::SimulationLoop_FirstStep(void) {
 
 	double frate = 0.0;
 
-	long ointerval = simOptions->getOInterval();
 	long current_state_count = 0;
 
 	complexList->initializeList();
@@ -515,7 +514,7 @@ void SimulationSystem::SimulationLoop_FirstStep(void) {
 	myTimer.advanceTime(); // select an rchoice
 	myTimer.stime = 0.0; // but reset the jump in time, because first step mode.
 
-	int ArrMoveType = complexList->doJoinChoice(myTimer);
+	double ArrMoveType = complexList->doJoinChoice(myTimer);
 
 	if (exportStatesInterval) {
 		exportInterval(myTimer.stime, current_state_count, ArrMoveType);
@@ -547,7 +546,7 @@ void SimulationSystem::SimulationLoop_FirstStep(void) {
 			exportTime(myTimer.stime, myTimer.last_trajectory_time);
 		}
 
-		int ArrMoveType = complexList->doBasicChoice(myTimer);
+		double ArrMoveType = complexList->doBasicChoice(myTimer);
 
 		myTimer.rate = complexList->getTotalFlux();
 		current_state_count++;
@@ -793,7 +792,7 @@ void SimulationSystem::exportTime(double& simTime, double& lastExportTime) {
 
 }
 
-void SimulationSystem::exportInterval(double simTime, int transitionCount, double arrType) {
+void SimulationSystem::exportInterval(double simTime, long transitionCount, double arrType) {
 
 	if ((transitionCount % simOptions->getOInterval()) == 0) {
 
@@ -852,10 +851,10 @@ void SimulationSystem::localTransitions(void) {
 	complexList->initializeList();
 	complexList->updateOpenInfo();
 
-	uint16_t N = complexList->getMoveCount();
-	uint16_t collisions = round(complexList->getJoinFlux());
+	int N = complexList->getMoveCount();
+	int collisions = int(round(complexList->getJoinFlux()));
 
-	for (uint16_t i = 0; i < (N + collisions); i++) {
+	for (int i = 0; i < (N + collisions); i++) {
 
 		InitializeSystem();
 		complexList->initializeList();
@@ -871,7 +870,7 @@ void SimulationSystem::localTransitions(void) {
 		}
 
 		// move the state using the i-th transition
-		int ArrMoveType = complexList->doBasicChoice(myTimer);
+		double ArrMoveType = complexList->doBasicChoice(myTimer);
 
 		// export the state after the transition
 		if (exportStatesInterval) {

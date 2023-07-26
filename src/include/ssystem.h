@@ -73,7 +73,7 @@ private:
 	void sendTransitionStateVectorToPython(boolvector transition_states, double current_time);
 
 	void exportTime(double& simTime, double& lastExportTime);
-	void exportInterval(double simTime, int period, double arrType = -88.0);
+	void exportInterval(double simTime, long period, double arrType = -88.0);
 	void exportTrajState(double simTime, double* lastExportTime, int period);
 
 	void printAllMoves(void);

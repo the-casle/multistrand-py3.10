@@ -92,9 +92,6 @@ protected:
 	double biScale;
 	double uniScale;
 
-	// not sure if these are long
-	long substrate_type;
-
 
 };
 

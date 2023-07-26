@@ -88,8 +88,14 @@ double EnergyOptions::getUniScale(void) {
 
 string EnergyOptions::toString(void) {
 
-// not sure if these are long
-	long substrate_type = NULL;
+	const char *substrate_type;
+	if(compareSubstrateType(SUBSTRATE_DNA)){
+	    substrate_type = "DNA";
+	} else if(compareSubstrateType(SUBSTRATE_RNA)){
+        substrate_type = "RNA";
+	} else {
+        substrate_type = "Invalid";
+	}
 
 	std::stringstream ss;
 
@@ -115,7 +121,7 @@ PEnergyOptions::PEnergyOptions(PyObject* input) :
 // extended constructor, inherits from regular energyOptions
 
 	python_settings = input;
-	getDoubleAttr(python_settings, temperature, &temperature); // We getting stuck here for some reason ( need to check values or the #define that its going into)
+	getDoubleAttr(python_settings, temperature, &temperature);
 	getLongAttr(python_settings, dangles, &dangles);
 	getLongAttr(python_settings, log_ml, &logml);
 	getBoolAttr(python_settings, gt_enable, &gtenable);
