@@ -266,17 +266,9 @@ static PyObject *System_calculate_energy(PyObject *self, PyObject *args) {
 		temp = new SimulationSystem();
 
 		if (temp->isEnergymodelNull()) {
-
 			PyErr_Format(
 				PyExc_AttributeError,
 				"No energy model available, cannot compute energy. Please pass an options object, or use multistrand.system.initialize_energy_model(...).\n");
-
-			if (options_object != NULL) {
-				Py_XDECREF(options_object);
-			}
-
-			Py_XDECREF(start_state_object);
-
 			return NULL;
 		}
 	}
