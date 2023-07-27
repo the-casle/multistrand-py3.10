@@ -597,10 +597,9 @@ void NupackEnergyModel::processOptions() {
 		}
 
 		if (myEnergyOptions->compareSubstrateType(SUBSTRATE_DNA)) {
-			file = "dna04.json";
+			file = "dna04-nupack3.json";
 		} else {
-			// FD: updating this to the new NUPACK parameter filenames
-			file = "rna06.json";
+			file = "rna06-nupack3.json";
 		}
 		std::string paramPath = "/source/parameters/";
 		fp = openFiles(nupackhome, paramPath, file, 0);
@@ -614,7 +613,7 @@ void NupackEnergyModel::processOptions() {
     if (!d.HasMember("dH")) {
 		if (temperature < CELSIUS37_IN_KELVIN - .0001 || temperature > CELSIUS37_IN_KELVIN + .0001) {
 			fprintf(stderr,
-					"ERROR: Temperature was set to %0.2lf C, but only dG type data files could be found. Please ensure that the requested parameter set has both .dG and .dH files!\n",
+					"ERROR: Temperature was set to %0.2lf C, but only dG type data files could be found. Please ensure that the requested parameter set has both dG and dH parameters!\n",
 					temperature);
 			exit(1);
 		}

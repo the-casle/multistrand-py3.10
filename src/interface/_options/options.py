@@ -504,7 +504,7 @@ class Options(object):
         if len(self._start_state) > 0:
                         
             for c, s in self._start_state:
-                c.set_boltzmann_parameters(self.dangleToString[self.dangles], self.substrateToString[self.substrate_type], self._temperature_celsius, self.sodium, self.magnesium)
+                c.set_boltzmann_parameters(self.dangleToString[self.dangles], self.substrate_type, self._temperature_celsius, self.sodium, self.magnesium)
     
                 if c.boltzmann_sample and not self.gt_enable:
                     raise Warning("Attempting to use Boltzmann sampling but GT pairing is disabled. Energy model of Multistrand will not match that of the NUPACK sampling method.")
@@ -649,7 +649,7 @@ class Options(object):
     def _add_start_complex(self, item):
         if isinstance(item, Complex):
             self._start_state.append((item, None))
-            item.set_boltzmann_parameters(self.dangleToString[self.dangles], self.substrateToString[self.substrate_type], self._temperature_celsius, self._sodium, self._magnesium)
+            item.set_boltzmann_parameters(self.dangleToString[self.dangles], self.substrate_type, self._temperature_celsius, self._sodium, self._magnesium)
             
             if not self.gt_enable and item.boltzmann_sample:
                 raise Warning("Attempting to use Boltzmann sampling but GT pairing is disabled. Energy model of Multistrand will not match that of the NUPACK sampling method.")

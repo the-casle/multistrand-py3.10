@@ -257,7 +257,7 @@ CEnergyOptions::CEnergyOptions() :
 
 }
 
-bool CEnergyOptions::compareSubstrateType(long type) {
+bool CEnergyOptions::compareSubstrateType(long type) { // JAKE MERGE: So they just dont run RNA...?
 
 	return (SUBSTRATE_DNA == type); // only test TRUE for when substrate is DNA.
 
