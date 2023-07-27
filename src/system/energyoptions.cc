@@ -235,37 +235,3 @@ void PEnergyOptions::getParameterFile(char* input, PyObject* tempString) {
 	input = (char *) getStringAttrReify(python_settings, parameter_file, tempString);
 
 }
-
-// CENERGYOPTIONS
-
-CEnergyOptions::CEnergyOptions() :
-		EnergyOptions() {
-
-// extended constructor, inherits from regular energyOptions
-
-// some basic default values;
-	temperature = 310.15;
-	dangles = 1;
-	logml = 0;
-	gtenable = 1;
-	kinetic_rate_method = 1;
-
-	biScale = 1.38e+06;
-	uniScale = 1.5e+08;
-
-	joinConcentration = 1e-06;
-
-}
-
-bool CEnergyOptions::compareSubstrateType(long type) { // JAKE MERGE: So they just dont run RNA...?
-
-	return (SUBSTRATE_DNA == type); // only test TRUE for when substrate is DNA.
-
-}
-
-// functionality to specify an energy file in a custom place for non-DNA/RNA substrates. unused atm.
-void CEnergyOptions::getParameterFile(char* input, PyObject* tempString) {
-
-	input = "";
-}
-

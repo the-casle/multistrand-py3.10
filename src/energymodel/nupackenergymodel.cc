@@ -604,7 +604,7 @@ void NupackEnergyModel::processOptions() {
 		std::string paramPath = "/source/parameters/";
 		fp = openFiles(nupackhome, paramPath, file, 0);
 	}
-    char buffer[65536];  // JAKE MERGE: What would be a better size for buffer/better way to read
+    char buffer[65536];
     rapidjson::FileReadStream is(fp, buffer, sizeof(buffer));
 
     rapidjson::Document d;

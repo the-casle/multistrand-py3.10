@@ -42,8 +42,7 @@ std::ostream& operator<<(std::ostream& ss, RateEnv& env) {
 
 	}
 
-	ss << moveutil::primeToDesc(int(env.arrType)); // JAKE MERGE: So there's a lot of doubles relating to the arrType
-	// But I see hints that the value is treated as integers. Would it make more sense for it to be a long?
+	ss << moveutil::primeToDesc(int(env.arrType));
 	ss << "  " << env.rate << "   ";
 
 	return ss;

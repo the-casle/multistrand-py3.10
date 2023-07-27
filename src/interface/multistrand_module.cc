@@ -21,8 +21,6 @@
 #include "google/heap-profiler.h"
 #endif
 
-// JAKE MERGE: need to check if I can get rid of a bunch of unnecessary incref and decref in the functions for this file
-
 typedef struct {
 	PyObject_HEAD
 	SimulationSystem *ob_system; /* Our one data member, no other attributes. */
@@ -303,17 +301,12 @@ static PyObject *System_calculate_rate(PyObject *self, PyObject *args, PyObject 
 			kwlist, &start_energy, &end_energy, &options_object, &joinflag))
 		return NULL;
 
-	if (options_object != NULL)
-		Py_INCREF(options_object);
-
 	if (options_object == NULL) {
 		em = Loop::GetEnergyModel();
 		if (em == NULL) {
 			PyErr_Format(
 				PyExc_AttributeError,
 				"No energy model available, cannot compute rates. Please pass an options object, or use multistrand.system.initialize_energy_model(...).\n");
-			if (options_object != NULL)
-				Py_XDECREF(options_object);
 			return NULL;
 		}
 
@@ -330,9 +323,6 @@ static PyObject *System_calculate_rate(PyObject *self, PyObject *args, PyObject 
 			PyErr_Format(
 				PyExc_AttributeError,
 				"Could not initialize the energy model, cannot compute rates. Please pass a valid options object, or use multistrand.system.initialize_energy_model(...).\n");
-			if (options_object != NULL) {
-				Py_XDECREF(options_object);
-			}
 
 			return NULL;
 		}
@@ -352,8 +342,6 @@ static PyObject *System_calculate_rate(PyObject *self, PyObject *args, PyObject 
 
 	if (em != Loop::GetEnergyModel())
 		delete em;
-
-	Py_XDECREF(options_object);
 
 	return rate;
 }
