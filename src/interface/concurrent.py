@@ -546,7 +546,7 @@ class MergeSim(object):
 
     numOfThreads = 2
     seed = 7713147777
-    ctx = multiprocessing.get_context('spawn')
+    ctx = multiprocessing.get_context()
 
     def __init__(self, settings=None):
         self.initializationTime = time.time()
