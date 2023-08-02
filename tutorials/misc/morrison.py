@@ -1,13 +1,18 @@
-from __future__ import print_function
-## FD: Morrison and Stols, 2003. Comparison of Multistrand vs. reported values.
-## FD: this computes the rates via k+ / k- = exp -dG / RT
+# Multistrand nucleic acid kinetic simulator
+# Copyright (c) 2008-2023 California Institute of Technology. All rights reserved.
+# The Multistrand Team (help@multistrand.org)
 
-GAS_CONSTANT_R = 0.0019872036
+"""
+Morrison and Stols, 2003. Comparison of Multistrand vs. reported values.
+this computes the rates via k+ / k- = exp -dG / RT
+"""
 
-import sys, os
+import os
 import math
 import xlrd         #excel sheets
 import numpy as np
+
+from multistrand.utils import GAS_CONSTANT
 
 from anneal import compute
 from nupack import pfunc
@@ -39,27 +44,27 @@ def doMorrison(myRange):
 
     diffSum = np.float(0.0)
     for i in myRange:
-        
+
         seq = excelFind(i+1, 1)
         seqC = excelFind(i+1,2)
         temp = 1000/ float(excelFind(i+1, 3))
-        measured = float(excelFind(i+1, 5) )
-        
+        measured = float(excelFind(i+1, 5))
+
         file.write(str(seq) + "   ")
         file.write(str( "%0.3g" %  (temp - 273.15) ) + "   ")
         file.write(str(  "%0.3g" % measured) + "   ")
-        
+
         predicted = compute(seq, temp)
         low, high = predicted.doBootstrap()
-        
+
         dotparen = "("*len(seq) + "+" + ")"*len(seq)
-        
+
         dG = pfunc([seq, seqC], [1,2], T=(temp-273.15), material="dna")
         print(str(dG))
-        
-        kMinus = predicted.k1() * math.exp( dG / ( GAS_CONSTANT_R * temp) ) 
-        kMinusLow = low * math.exp( dG / ( GAS_CONSTANT_R * temp) ) 
-        kMinusHigh = high * math.exp( dG / ( GAS_CONSTANT_R * temp) ) 
+
+        kMinus = predicted.k1() * math.exp( dG / ( GAS_CONSTANT * temp) )
+        kMinusLow = low * math.exp( dG / ( GAS_CONSTANT * temp) )
+        kMinusHigh = high * math.exp( dG / ( GAS_CONSTANT * temp) )
         
         file.write(str( "%0.3g" % np.log10(kMinus)) +     "    "  )
         file.write(str( "%0.3g" % np.log10(kMinusLow)) +     "    "  )

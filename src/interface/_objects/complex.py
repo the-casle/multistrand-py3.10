@@ -1,10 +1,14 @@
+# Multistrand nucleic acid kinetic simulator
+# Copyright (c) 2008-2023 California Institute of Technology. All rights reserved.
+# The Multistrand Team (help@multistrand.org)
+
 from .strand import Strand
 from functools import reduce
 
 from nupack import Model, sample
 
 
-class Complex(object):
+class Complex:
 
     MAX_SAMPLES_AT_ONCE = 200
     """
@@ -66,14 +70,17 @@ class Complex(object):
         Complex.unique_id += 1
     
     def __str__(self):
-        return "Complex: {fieldnames[0]:>9}: '{0.name}'\n\
-           : {fieldnames[1]:>9}: {0.sequence}\n\
-           : {fieldnames[2]:>9}: {0.structure}\n\
-           : {fieldnames[3]:>9}: {1}\n\
-           : {fieldnames[4]:>9}: {0.boltzmann_sample}\n\
-           : {fieldnames[5]:>9}: {0.boltzmann_supersample}".format(self, [i.name for i in self.strand_list],
-           fieldnames=('Name', 'Sequence', 'Structure', 'Strands', 'Boltzmann', 'Supersample'))
-    
+        return (
+            "Complex:\n"
+            "  {fieldnames[0]:>11}: '{0.name}'\n"
+            "  {fieldnames[1]:>11}: {0.sequence}\n"
+            "  {fieldnames[2]:>11}: {0.structure}\n"
+            "  {fieldnames[3]:>11}: {1}\n"
+            "  {fieldnames[4]:>11}: {0.boltzmann_sample}\n"
+            "  {fieldnames[5]:>11}: {0.boltzmann_supersample}").format(
+                self, [i.name for i in self.strand_list], fieldnames=(
+                    'Name', 'Sequence', 'Structure', 'Strands', 'Boltzmann', 'Supersample'))
+
     def _init_parse_structure(self, structure):
         strand_count = len(self.strand_list)
         base_count = sum(len(s.sequence) for s in self.strand_list)

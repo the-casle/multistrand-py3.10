@@ -1,8 +1,14 @@
+# Multistrand nucleic acid kinetic simulator
+# Copyright (c) 2008-2023 California Institute of Technology. All rights reserved.
+# The Multistrand Team (help@multistrand.org)
 
-from hybridization23 import Settings, ResultsHybridization, suyamaT, suyamaC, enum_hybridization, title_hybridization, testSeq, NUM_OF_REPEATS, CONVERGENCE_CRIT
-from multistrand.system import SimSystem
-from multistrand.builder import hybridizationString, Builder, BuilderRate, threewaybmString, dissociationString
-from multistrand.options import Options, Literals
+from hybridization23 import \
+    Settings, ResultsHybridization, suyamaT, suyamaC, \
+    enum_hybridization, title_hybridization, NUM_OF_REPEATS
+from multistrand.builder import \
+    hybridizationString, Builder, BuilderRate, \
+    threewaybmString, dissociationString
+from multistrand.options import Literals
 from multistrand.experiment import standardOptions
 from multistrand.objects import StopCondition
 

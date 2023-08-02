@@ -1,4 +1,6 @@
-from __future__ import absolute_import
+# Multistrand nucleic acid kinetic simulator
+# Copyright (c) 2008-2023 California Institute of Technology. All rights reserved.
+# The Multistrand Team (help@multistrand.org)
 
 import os, random
 from functools import reduce
@@ -8,28 +10,32 @@ import numpy as np
 from ._objects.strand import Strand
 from nupack import mfe
 
-""" Returns the melting temperature in Kelvin for a duplex of the given sequence.
-    Sequences should be at least 8 nt long for the SantaLucia model to reasonably apply.
-    For shorter sequences, see notes on "Melting Temperature (Tm) Calculation" by biophp.org
-    Specifically, look at basicTm vs Base-stacking Tm. FD mar 2018
-"""
+
+GAS_CONSTANT = 0.0019872036  # kcal / K mol
 
 
 def meltingTemperature(seq, concentration=1.0e-9):
-        GAS_CONSTANT = 0.001987
-        
-        strand = Strand(sequence=seq)
+    """
+    Returns the melting temperature in Kelvin for a duplex of the given sequence.
+    Sequences should be at least 8 nt long for the SantaLucia model to reasonably apply.
+    For shorter sequences, see notes on "Melting Temperature (Tm) Calculation" by biophp.org
+    Specifically, look at basicTm vs Base-stacking Tm. FD mar 2018
+    """
+    strand = Strand(sequence=seq)
 
-        energy20 = float(mfe([strand.sequence, strand.C.sequence ], material='dna', T=20.0)[0][1]) + GAS_CONSTANT * (273.15 + 20) * np.log(55.5)
-        energy30 = float(mfe([strand.sequence, strand.C.sequence ], material='dna', T=30.0)[0][1]) + GAS_CONSTANT * (273.15 + 30) * np.log(55.5)
-        
-        dS = (energy20 - energy30) / 10.0  # kcal/ K mol
-        dH = energy30 + (273.15 + 30.0) * dS  # kcal/mol
-        return  (dH / (dS + GAS_CONSTANT * np.log(concentration / 4.0)))
+    energy20 = (float(mfe([strand.sequence, strand.C.sequence ], material='dna', T=20.0)[0][1])
+                + GAS_CONSTANT * (273.15 + 20) * np.log(55.5))
+    energy30 = (float(mfe([strand.sequence, strand.C.sequence ], material='dna', T=30.0)[0][1])
+                + GAS_CONSTANT * (273.15 + 30) * np.log(55.5))
+
+    dS = (energy20 - energy30) / 10.0  # kcal/ K mol
+    dH = energy30 + (273.15 + 30.0) * dS  # kcal/mol
+    return  (dH / (dS + GAS_CONSTANT * np.log(concentration / 4.0)))
 
 
 def concentration_string(concentration):
-    """ An easy print function to format concentration in M
+    """
+    An easy print function to format concentration in M
     """
     if concentration < 1e-12: 
         return "{} fM".format(1e15 * concentration)
@@ -73,9 +79,12 @@ def standardFileName(SCRIPT_DIR, mySeq=None, extraTitle=None, runs=None):
     return fileName
 
 
-# Takes a list of ids and structures, and computes the pairtype for each of the complexes. 
-# Then returns a list of pairtypes that is alphabetically ordered.
 def uniqueStateID(idsList, structsList):
+    """
+    Takes a list of ids and structures, and computes the pairtype for each of
+    the complexes. Then returns a list of pairtypes that is alphabetically
+    ordered.
+    """
     pairTypes = []
     
     for ids, struct in zip(idsList, structsList):
@@ -89,36 +98,43 @@ def uniqueStateID(idsList, structsList):
     return tuple(mySortedList)
 
 
-# ## Pairtype util
-def pairType(ids, structs):
-    """Given identifiers and dot-parens for a complex, 
-        pairType returns a unique identifier for that secondary structure
+def generatePairing(dotParen, stack, offset, output) -> None:
     """
+    Utility function.
+    """
+    index = 1
+    for c in dotParen:
+        if c == '(':
+            # pushing the first end of the basepair
+            stack.append(offset + index)
+        elif c == ')':
+            # popping the stack, setting two locations
+            currIndex = offset + index
+            otherIndex = stack.pop()
 
-    # utility function
-    def generatePairing(dotParen, stack, offset, output):
-        index = 1
-        for c in dotParen:
-            if c == '(':
-                # pushing the first end of the basepair
-                stack.append(offset + index)
-            elif c == ')':
-                # popping the stack, setting two locations
-                currIndex = offset + index
-                otherIndex = stack.pop()
-                                
-                output[currIndex - 1] = otherIndex
-                output[otherIndex - 1] = currIndex
-            elif not c == '.':
-                raise Warning('There is an error in the dot paren structure -- PairType function') 
-            index += 1
-    
+            output[currIndex - 1] = otherIndex
+            output[otherIndex - 1] = currIndex
+        elif not c == '.':
+            raise Warning('generatePairing: There is an error in the dot paren structure.')
+        index += 1
+
+
+def pairType(ids, structs):
+    """
+    Given identifiers and dot-parens for a complex,
+    pairType returns a unique identifier for that secondary structure.
+    """
     idList = ids.split(',')
-    nList = []
-    for id in idList:
-        id = id.split(":")[1]
-        nList.append(id)
-    idList = nList
+    if all(id_.count(":") == 0 for id_ in idList):
+        pass
+    elif all(id_.count(":") == 1 for id_ in idList):
+        nList = []
+        for id_ in idList:
+            id_ = id_.split(":")[1]
+            nList.append(id_)
+        idList = nList
+    else:
+        raise ValueError("Unsupported strand labelling.")
     
     dotParens = structs.split('+') 
     N = len(dotParens)
@@ -138,12 +154,8 @@ def pairType(ids, structs):
 
     myStack = []
     output = [0, ] * sum([len(dp) for dp in dotParens])
-    myEnum = enumerate(idList)
-    for index, val in myEnum:
+    for index in range(len(idList)):
         generatePairing(dotParens[index], myStack, offsets[index], output)
-#     str_output = ''.join([str(x) for x in output])
-#     return (idString, str_output)
-    
     return (tuple(idString), tuple(output))
 
 
@@ -156,7 +168,7 @@ def generate_sequence(n, allowed_bases=['G', 'C', 'T', 'A'], base_probability=No
     
     result = ""
     if base_probability is None:
-        return result.join([random.choice(allowed_bases) for i in range(n)])
+        return result.join([random.choice(allowed_bases) for _ in range(n)])
     else:
         def uniform_seq(r):
             """ This function returns a lambda to be used on a sequence of tuples of
@@ -183,3 +195,61 @@ def generate_sequence(n, allowed_bases=['G', 'C', 'T', 'A'], base_probability=No
                         # the reduce since the result was a tuple.
                        (0.0, 'Invalid Probabilities'))[1]
                 for _ in range(n)])
+
+
+def dGC_feature(o, i: int):
+    states = o.full_trajectory[i]
+    dGC = 0.0
+    for state in states:
+        dGC += (state[5] - (
+            o._temperature_kelvin * 0.0019872036
+            * np.log(1.0 / o.join_concentration) * state[4].count("+")))
+        # print("count is  " +  str(state[4].count("+")))
+        # print("join conc is " + str(o.join_concentration))
+        # print("dG-Complex is " + "%.2f" % dGC + " kcal/mol  for " + str(state[3]))
+    return f"dGC={dGC:> 6.2f} kcal/mol"
+
+
+def printTrajectory(o, timescale=(1e3, "ms"), feature=None, show_uid: bool = False):
+    seqstring = " "
+    for i in range(len(o.full_trajectory)):
+        time = timescale[0] * o.full_trajectory_times[i]
+        states = o.full_trajectory[i]
+
+        ids = []
+        newseqs = []
+        structs = []
+        dG = 0.0
+
+        pairTypes = []
+        for state in states:
+            ids.append(str(state[2]))
+            # extract the strand sequences in each complex
+            # (joined by "+" for multistranded complexes)
+            newseqs.append(state[3])
+            # similarly extract the secondary structures for each complex
+            structs.append(state[4])
+            dG += state[5]
+
+            if show_uid:
+                uniqueID = pairType(state[2], state[4])
+                pairTypes.append(
+                    ''.join(uniqueID[0]) + '_' + ','.join(map(str, uniqueID[1])))
+
+        # make a space-separated string of complexes, to represent the whole
+        # tube system sequence
+        newseqstring = ' '.join(newseqs)
+        # give the dot-paren secondary structure for the whole test tube
+        tubestruct = ' '.join(structs)
+        if show_uid:
+            identities = '+'.join(pairTypes)
+
+        if not newseqstring == seqstring:
+            print(newseqstring)
+            # because strand order can change upon association of dissociation,
+            # print it when it changes
+            seqstring = newseqstring
+
+        print(f"{tubestruct}   t={time:.6f} {timescale[1]}, dG={dG:> 6.2f} kcal/mol"
+              + (f", {feature(o, i)}" if feature is not None else "")
+              + (f", uID='{identities}'" if show_uid else ""))

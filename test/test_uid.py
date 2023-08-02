@@ -1,17 +1,17 @@
-"""
-This demonstrates the pair-type functionality.
-For a given complex, Pairtype returns a unique representation.
-This is important for hashing functions.
-"""
-
-import unittest
+# Multistrand nucleic acid kinetic simulator
+# Copyright (c) 2008-2023 California Institute of Technology. All rights reserved.
+# The Multistrand Team (help@multistrand.org)
 
 from multistrand.utils import pairType
 
 
-class idTest(unittest.TestCase):
-
-    def testOne(self):
+class Test_UID:
+    """
+    This demonstrates the pair-type functionality.
+    For a given complex, Pairtype returns a unique representation.
+    This is important for hashing functions.
+    """
+    def test_eq(self):
         names1 = "strand1,strand2"
         names2 = "strand2,strand1"
     
@@ -24,9 +24,9 @@ class idTest(unittest.TestCase):
         print(str(uID1))
         print(str(uID2))
         
-        self.assertTrue(uID1 == uID2)
+        assert uID1 == uID2
         
-    def testTwo(self):
+    def test_neq(self):
         names1 = '11:invader,5:invader*,10:top'
         names2 = '11:invader,5:invader*,10:top'
 
@@ -39,9 +39,4 @@ class idTest(unittest.TestCase):
         print(str(uID1))
         print(str(uID2))
         
-        self.assertTrue(not uID1 == uID2)
-
-    
-if __name__ == '__main__':
-    test = idTest()
-    test.doTest()
+        assert uID1 != uID2

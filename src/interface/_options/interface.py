@@ -1,13 +1,21 @@
+# Multistrand nucleic acid kinetic simulator
+# Copyright (c) 2008-2023 California Institute of Technology. All rights reserved.
+# The Multistrand Team (help@multistrand.org)
+
+from typing import Optional
+
 from .constants import OptionsConstants
 
+
 Constants = OptionsConstants()
+
 
 class Interface(object):
     def __init__(self):
         """ Sets some default values for the Interface, in addition to
         initializing the current results list, etc."""
                
-        self.current_seed = None
+        self.current_seed: Optional[int] = None
         """ The seed used by the random number generator in the most recently
         completed trajectory.
         
@@ -93,13 +101,14 @@ class Interface(object):
     
 
 class Result( object ):
-    """ Holds the results of a single trajectory run by multistrand.
+    """
+    Holds the results of a single trajectory run by multistrand.
 
     How to look at the data of a Result object 'r':
 
     str(r):  printable representation of the data (e.g. print(r) looks nice)
-    repr(r): raw data - the python tuple representing this Result object."""
-
+    repr(r): raw data - the python tuple representing this Result object.
+    """
     def __init__(self, value_list=None, result_type=None, start_state=None):
         """ Takes the input list and parses it into something intelligible. """
         if result_type == 'status_line':
@@ -120,7 +129,8 @@ class Result( object ):
             self.type_name = "Invalid Type: {0}".format( self.com_type )
 
     def __str__( self ):
-        res = "Trajectory Seed [{0}]\n\
+        res = "\
+        Trajectory Seed [{0}]\n\
         Result: {1}\n\
         Completion Time: {2}\n\
         Completion Tag: {3}".format( self.seed, self.type_name, self.time, self.tag )
@@ -141,13 +151,14 @@ class Result( object ):
 
 
 class FirstStepResult( object ):
-    """ Holds the results of a single trajectory run by multistrand.
+    """
+    Holds the results of a single trajectory run by multistrand.
 
     How to look at the data of a Result object 'r':
 
     str(r):  printable representation of the data (e.g. print(r) looks nice)
-    repr(r): raw data - the python tuple representing this Result object."""
-
+    repr(r): raw data - the python tuple representing this Result object.
+    """
     def __init__(self, value_list=None, start_state=None):
         """ Takes the input list and parses it into something intelligible. """
         self.seed, self.com_type, self.time, self.collision_rate, self.tag = value_list
@@ -159,7 +170,8 @@ class FirstStepResult( object ):
             self.type_name = "Invalid Type: {0}".format( self.com_type )
 
     def __str__( self ):
-        res = "Trajectory Seed [{0.seed}]\n\
+        res = "\
+        Trajectory Seed [{0.seed}]\n\
         Result: {0.type_name}\n\
         Completion Time: {0.time}\n\
         Collision Rate: {0.collision_rate}\n\

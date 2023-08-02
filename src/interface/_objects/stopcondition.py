@@ -1,10 +1,13 @@
+# Multistrand nucleic acid kinetic simulator
+# Copyright (c) 2008-2023 California Institute of Technology. All rights reserved.
+# The Multistrand Team (help@multistrand.org)
 
 
-class StopCondition(object):
-    """Represents a trajectory stopping condition.  Plug-and-play equivalent to a Macrostate."""
-    
-   
-                 
+class StopCondition:
+    """
+    Represents a trajectory stopping condition. Plug-and-play equivalent to a
+    Macrostate.
+    """
     def __init__(self, tag, complex_items):
         """ __init__(self, tag, complex_items)
             tag is the reported name for this stop condition (string)
@@ -38,8 +41,8 @@ class StopCondition(object):
     def __str__(self):
         str_ret = "Stop Condition, tag:" + self.tag
         for i, val in enumerate(self.complex_items):
-            str_ret += "\nSequence  %d: %s" % (i, val[0].sequence) 
-            str_ret += "\nStructure %d: %s\n" % (i, val[0].structure) 
+            str_ret += "\n  Sequence  %d: %s" % (i, val[0].sequence)
+            str_ret += "\n  Structure %d: %s" % (i, val[0].structure)
 
         return str_ret
 

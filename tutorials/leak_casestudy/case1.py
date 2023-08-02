@@ -1,10 +1,11 @@
-from __future__ import print_function
-# Frits Dannenberg, Caltech, 2016.
-# fdann@caltech.edu
+# Multistrand nucleic acid kinetic simulator
+# Copyright (c) 2008-2023 California Institute of Technology. All rights reserved.
+# The Multistrand Team (help@multistrand.org)
 
-# Example of leak rates, AT ends vs CG ends.
-# Compatible with Multistrand 2.1 or higher
-# Visit www.multistrand.org
+"""
+Example of leak rates, AT ends vs CG ends.
+Compatible with Multistrand 2.1 or higher
+"""
 
 # FD: This script is now set to use 4 threads and just 50,000 trajectories.
 # FD: This is different from the results in case1.pdf
@@ -13,15 +14,12 @@ from __future__ import print_function
 from multistrand.objects import StopCondition, Domain, Complex, Strand
 from multistrand.options import Options, Literals
 from multistrand.concurrent import MergeSim
-from multistrand._options.interface import FirstStepResult
-
-import numpy as np
 
 
 ATIME_OUT = 10.0
 
 myMultistrand = MergeSim()
-myMultistrand.setNumOfThreads(8)
+myMultistrand.setNumOfThreads(8) 
 myMultistrand.setLeakMode()
 
 
@@ -42,8 +40,8 @@ def first_step_simulation(strand_seq, trials, T=25, material="DNA"):
     duplex_invaded = Complex(strands=[dangle, bot], structure="(.+)")
 
     # Declare the simulation complete if the strands become a perfect duplex.
-    success_stop_condition = StopCondition(Literals.success, [(duplex_invaded, 2, 0)])
-    failed_stop_condition = StopCondition(Literals.failure, [(duplex_complex, 2, 0)])
+    success_stop_condition = StopCondition(Literals.success, [(duplex_invaded, Options.dissoc_macrostate, 0)])
+    failed_stop_condition = StopCondition(Literals.failure, [(duplex_complex, Options.dissoc_macrostate, 0)])
 
     for x in [duplex_complex, invader_complex]:
         x.boltzmann_count = trials

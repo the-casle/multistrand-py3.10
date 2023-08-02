@@ -1,13 +1,15 @@
-from __future__ import print_function
-from __future__ import absolute_import
-# Options object.                                 
-# Copyright 2010-2017 Caltech                                                  
-# Joseph Schaeffer                                                             
-# Chris Berlind                                                                
-# Frits Dannenberg
+# Multistrand nucleic acid kinetic simulator
+# Copyright (c) 2008-2023 California Institute of Technology. All rights reserved.
+# The Multistrand Team (help@multistrand.org)
+
+"""
+Options object.
+"""
 
 import copy
 from enum import IntEnum
+from typing import List, Optional
+
 from .interface import Interface
 from ..objects import Strand, Complex, StopCondition
 from ..__init__ import __version__
@@ -33,7 +35,7 @@ class Literals(object):
     no_initial_moves = "noinitial"
     sim_error = "error"
     
-    """ rate_method    """
+    """ rate_method """
     metropolis = 1
     kawasaki = 2
     arrhenius = 3
@@ -114,8 +116,8 @@ class Options(object):
         Keyword Arguments:
         dangles -- Specifies the dangle terms used in the energy model.
                    Can be the strings 'None', 'Some', or 'All'.
-        start_state  [type=list]     -- A list of Complexes to 
-                                        use as the initial state of the system.
+        start_state  [type=list]     -- A list of Complexes to use as the
+                                        initial state of the system.
         simulation_time [type=float] -- Cap on the maximum simulation time.
         num_simulations [type=int]   -- Number of trajectories to run
         biscale         [type=float] -- Bimolecular scaling constant
@@ -142,7 +144,7 @@ class Options(object):
         ##################################################
         
         """ Pipe to let Multistrand know the version from ../__init__.py """
-        self.ms_version = float(__version__)  
+        self.ms_version = float(__version__)
         
         self.errorlog = []
         """ Keeps lines relating to possible errors or warnings that
@@ -191,7 +193,7 @@ class Options(object):
         #                                           #
         #############################################
         # See accessors below
-        self._start_state = []
+        self._start_state: List[Complex] = []
         
         self.gt_enable = True
         """ Allow GT base pairs? If not, penalize by 10000 kcal/mol.
@@ -207,32 +209,28 @@ class Options(object):
         with the number of adjoining helices.
         """
         
-        self.join_concentration = 1.0
+        self._join_concentration: float = 1.0
         """ concentration for V calcs
         Units are in M (molar), and represent the concentration of a single unique strand in the system. The volume simulated is
         then chosen using this parameter.
         """
 
-        # ##
-        # ## See the temperature property way below (after __init__)
-        # ## for more info on accessors for these data members.
-        # ##
         self._temperature_celsius = 37.0
         self._temperature_kelvin = 310.15
 
         self.rate_scaling = None
         """FD: This is a legacy option that sets unimolecular and bimolecular scaling automatically if set"""
 
-        self.unimolecular_scaling = -1.0 
+        self._unimolecular_scaling: float = -1.0
         """ Rate scaling factor for unimolecular reactions."""
         
-        self.bimolecular_scaling = -1.0 
+        self._bimolecular_scaling: float = -1.0
         """ Rate scaling factor for bimolecular reactions."""
 
-        self.rate_method = Literals.kawasaki
+        self._rate_method: int = Literals.kawasaki
         """ Choice of methods for determining forward/reverse rates. """
 
-        self.dangles = Literals.dangles_some
+        self._dangles: int = Literals.dangles_some
         """ Dangles options for the energy model.
         
         None [0]: Do not include any dangles terms in the energy model.
@@ -240,7 +238,7 @@ class Options(object):
         All  [2]: Include all dangles terms, including odd overlapping ones.
         """
 
-        self.parameter_type = self.nupackModel
+        self._parameter_type: int = self.nupackModel
         """ Which type of energy model parameter file to use.
 
         Vienna [0]: No longer well tested. Recommend not using.
@@ -248,7 +246,7 @@ class Options(object):
                     nearly the same as mfold style files.
         """
 
-        self.substrate_type = Literals.substrateDNA
+        self._substrate_type: int = Literals.substrateDNA
         """ What substrate's parameter files to use. 
 
         Invalid [0]: Indicates we should not auto-search for a param file.
@@ -275,23 +273,23 @@ class Options(object):
         #
         ####################
         
-        self.simulation_mode = Literals.first_passage_time
+        self._simulation_mode = Literals.first_passage_time
         """ The simulation mode: how we want the simulation system to
         perform the main loop.
         """
         
-        self.simulation_time = 600.0
+        self._simulation_time: float = 600.0
         """ Maximum time (in seconds) allowed for each trajectory.
         
         Type         Default
         double       600.0
         """
         
-        self.num_simulations = 1
+        self._num_simulations: int = 1
         """ Total number of trajectories to run. 
         """
         
-        self.initial_seed = None
+        self._initial_seed: Optional[int] = None
         """ Initial random number seed to use.
         If None when simulation starts, a random seed will be chosen
         """
@@ -429,7 +427,7 @@ class Options(object):
             self.JSDefault()
 
         print(warningmsg)
-        self.rate_scaling = None       
+        self.rate_scaling = None
         
     # FD, May 5th 2017
     # Supplying rate options for Metropolis and Kawasaki methods,
@@ -437,52 +435,82 @@ class Options(object):
     # and one setting for Metropolis rates derived for DNA23.
     
     def JSDefault(self):
-        """ Default rates from Joseph Schaeffer's thesis  """
-        self.unimolecular_scaling = 1.50e+08
-        self.bimolecular_scaling = 1.38e+06
+        """ Default rates (Kawasaki at 37 degree Celcius) from Joseph Schaeffer's thesis  """
+        self.JSKawasaki37()
     
     def JSMetropolis25(self):
         """ Default rates for Metropolis at 25 degree Celcius, from Joseph Schaeffer's thesis
         """
+        self.rate_method = Literals.metropolis
+
         self.unimolecular_scaling = 4.4e8
         self.bimolecular_scaling = 1.26e6
     
     def JSKawasaki25(self):
         """ Default rates for Kawasaki at 25 degree Celcius, from Joseph Schaeffer's thesis
         """
+        self.rate_method = Literals.kawasaki
+
         self.unimolecular_scaling = 6.1e7
         self.bimolecular_scaling = 1.29e6
     
     def JSKawasaki37(self):
         """ Default rates for Kawasaki at 37 degree Celcius, from Joseph Schaeffer's thesis
         """
+        self.rate_method = Literals.kawasaki
+
         self.unimolecular_scaling = 1.5e8
         self.bimolecular_scaling = 1.38e6
     
     def JSMetropolis37(self):
         """ Default rates for Metropolis at 37 degree Celcius, from Joseph Schaeffer's thesis
         """
+        self.rate_method = Literals.metropolis
+
         self.unimolecular_scaling = 7.3e8
         self.bimolecular_scaling = 1.40e6
 
     def DNA23Metropolis(self):
         """ 
         Parameters for Metropolis at 25 degree Celcius, from the DNA23 conference (55th walker)
+
+        Reference:
+        ----------
+        Zolaktaf, Sedigheh, Frits Dannenberg, Xander Rudelis, Anne Condon,
+        Joseph M. Schaeffer, Mark Schmidt, Chris Thachuk, and Erik Winfree.
+        2017. ‘Inferring Parameters for an Elementary Step Model of DNA
+        Structure Kinetics with Locally Context-Dependent Arrhenius Rates’. In
+        DNA Computing and Molecular Programming, edited by Robert Brijder and
+        Lulu Qian, 172–87. Lecture Notes in Computer Science. Cham: Springer
+        International Publishing. https://doi.org/10.1007/978-3-319-66799-7_12.
         """
+        self.rate_method = Literals.metropolis
+
         self.unimolecular_scaling = 2.41686715e+06
-        self.bimolecular_scaling = 8.01171383e+05 
+        self.bimolecular_scaling = 8.01171383e+05
     
     def DNA23Arrhenius(self):
+        """
+        Reference:
+        ----------
+        Zolaktaf, Sedigheh, Frits Dannenberg, Xander Rudelis, Anne Condon,
+        Joseph M. Schaeffer, Mark Schmidt, Chris Thachuk, and Erik Winfree.
+        2017. ‘Inferring Parameters for an Elementary Step Model of DNA
+        Structure Kinetics with Locally Context-Dependent Arrhenius Rates’. In
+        DNA Computing and Molecular Programming, edited by Robert Brijder and
+        Lulu Qian, 172–87. Lecture Notes in Computer Science. Cham: Springer
+        International Publishing. https://doi.org/10.1007/978-3-319-66799-7_12.
+        """
         self.rate_method = Literals.arrhenius
 
         self.lnAStack = 1.41839430e+01
         self.EStack = 5.28692038e+00
 
-        self.lnAEnd = 1.64236969e+01
-        self.EEnd = 4.46143369e+00
+        self.lnALoop = 1.64236969e+01
+        self.ELoop = 4.46143369e+00
 
-        self.lnALoop = 1.29648159e+01
-        self.ELoop = 3.49798154e+00
+        self.lnAEnd = 1.29648159e+01
+        self.EEnd = 3.49798154e+00
 
         self.lnAStackLoop = 5.81061725e+00
         self.EStackLoop = -1.12763854e+00
@@ -498,71 +526,135 @@ class Options(object):
         
         self.bimolecular_scaling = 1.60062641e-02
  
-    # FD: After temperature, substrate (RNA/DNA) or danlges is updated, we attempt to update boltzmann samples.
+    # FD: After temperature, substrate (RNA/DNA) or danlges is updated, we
+    # attempt to update boltzmann samples.
     def updateBoltzmannSamples(self):
+        for c in self._start_state:
+            c.set_boltzmann_parameters(
+                self.dangleToString[self.dangles],
+                self.substrateToString[self.substrate_type],
+                self._temperature_celsius, self.sodium, self.magnesium)
+            self.warn_Boltzmann_sample_wo_GT(c)
 
-        if len(self._start_state) > 0:
-                        
-            for c, s in self._start_state:
-                c.set_boltzmann_parameters(self.dangleToString[self.dangles], self.substrate_type, self._temperature_celsius, self.sodium, self.magnesium)
-    
-                if c.boltzmann_sample and not self.gt_enable:
-                    raise Warning("Attempting to use Boltzmann sampling but GT pairing is disabled. Energy model of Multistrand will not match that of the NUPACK sampling method.")
-    
+    def warn_Boltzmann_sample_wo_GT(self, c: Complex):
+        if c.boltzmann_sample and not self.gt_enable:
+            raise Warning(
+                "Attempting to use Boltzmann sampling, but GT pairing is "
+                "disabled. Energy model of Multistrand will not match that of "
+                "the NUPACK sampling method.")
+
+    @property
+    def simulation_time(self):
+        return self._simulation_time
+
+    @simulation_time.setter
+    def simulation_time(self, value):
+        self._simulation_time = float(value)
+
+    @property
+    def num_simulations(self):
+        return self._num_simulations
+
+    @num_simulations.setter
+    def num_simulations(self, value):
+        self._num_simulations = int(value)
+
     @property
     def bimolecular_scaling(self):
-
         if self.rate_scaling != None :
             self.legacyRates()
-         
         return self._bimolecular_scaling
  
     @bimolecular_scaling.setter
-    def bimolecular_scaling(self, val):
-                  
-        self._bimolecular_scaling = float(val)
+    def bimolecular_scaling(self, value):
+        self._bimolecular_scaling = float(value)
  
     @property
     def unimolecular_scaling(self):
-         
-        if self.rate_scaling != None :
+        if self.rate_scaling != None:
             self.legacyRates()
-         
-        return self._unimolecular_scaling  
+        return self._unimolecular_scaling
     
     @unimolecular_scaling.setter
-    def unimolecular_scaling(self, val):
-                  
-        self._unimolecular_scaling = float(val)
-        
-# FD: Shadow variables for danlges only because we need to observe changes (and update boltzmann samples accordingly)
+    def unimolecular_scaling(self, value):
+        self._unimolecular_scaling = float(value)
+
+    @property
+    def join_concentration(self):
+        return self._join_concentration
+
+    @join_concentration.setter
+    def join_concentration(self, value):
+        self._join_concentration = float(value)
+
+    # FD: Shadow variables for danlges because we need to observe changes
+    # (and update boltzmann samples accordingly)
     @property
     def dangles(self):
         return self._dangles
     
     @dangles.setter
-    def dangles(self, val):
-        self._dangles = int(val)
+    def dangles(self, value):
+        if isinstance(value, str):
+            value = self.dangleToString.index(value)
+        self._dangles = int(value)
+        assert self.dangles in range(3)
         self.updateBoltzmannSamples()
         
-# FD: shadow parameter so that boltzmann samples can be updated when this parameter is set
-# FD: In a better control flow, complexes themselves might fetch the right constants just before evaluating their boltzmann samples 
+    # FD: Shadow parameter so that boltzmann samples can be updated when this
+    # parameter is set. In a better control flow, complexes themselves might fetch the right
+    # constants just before evaluating their boltzmann samples.
     @property
     def substrate_type(self):
         return self._substrate_type
 
     @substrate_type.setter
     def substrate_type(self, value):
+        if isinstance(value, str):
+            value = self.substrateToString.index(value)
         self._substrate_type = int(value)
+        assert self.substrate_type in range(1, 3)
         self.updateBoltzmannSamples()
 
-    """ FD: Following same listener pattern for sodium, magnesium, 
-            so that changes are propagated to complexes."""
+    @property
+    def parameter_type(self):
+        return self._parameter_type
 
+    @parameter_type.setter
+    def parameter_type(self, value):
+        if isinstance(value, str):
+            value = self.parameterTypeToString.index(value)
+        self._parameter_type = int(value)
+        assert self.parameter_type in range(2)
+
+    @property
+    def simulation_mode(self):
+        return self._simulation_mode
+
+    @simulation_mode.setter
+    def simulation_mode(self, value):
+        if isinstance(value, str):
+            value = self.simulationMode[value]
+        self._simulation_mode = int(value)
+        assert self.simulation_mode in [16, 48, 256, 128]
+
+    @property
+    def rate_method(self):
+        return self._rate_method
+
+    @rate_method.setter
+    def rate_method(self, value):
+        if isinstance(value, str):
+            value = self.RateMethodToString.index(value)
+        self._rate_method = int(value)
+        assert self.rate_method in range(1, 4)
+
+    # FD: Following same listener pattern for sodium, magnesium, so that changes
+    # are propagated to complexes.
     @property
     def sodium(self):
         return self._sodium
-    
+
     @sodium.setter
     def sodium(self, value):
         self._sodium = float(value)
@@ -582,14 +674,12 @@ class Options(object):
 
     @property
     def boltzmann_sample(self):
-        
         raise ValueError('Options.boltzmann_sample is now depreciated. Use Complex.boltzmann_sample instead.')
-        
+
     @boltzmann_sample.setter
     def boltzmann_sample(self, val):
-        
         raise ValueError('Options.boltzmann_sample is now depreciated. Use Complex.boltzmann_sample instead.')
-            
+
     @property
     def start_state(self):
         """ Get the start state, i.e. a list of Complex objects.
@@ -600,16 +690,8 @@ class Options(object):
         This should be used by ssystem.cc to get the (potentially sampled) 
         start state.
         """
+        return self._start_state
 
-        def process_state(x):
-            cmplx, rest_state = x
-            if rest_state is None:
-                return cmplx
-            else:
-                return rest_state.get_starting_complex()
-            
-        return [process_state(s) for s in self._start_state]
-    
     @start_state.setter
     def start_state(self, *args):
         """ Set the start state, i.e. a list of Complex objects.
@@ -630,36 +712,40 @@ class Options(object):
         # Copy the input list because it's easy to do and it's safer
         
         if isinstance(args[0], Complex):
-            # args is a list of complexes or resting states.
+            # args is a list of complexes
             vals = copy.deepcopy(args) 
         elif len(args) == 1 and hasattr(args[0], "__iter__"):
             vals = copy.deepcopy(args[0])
         else:
             raise ValueError("Could not comprehend the start state you gave me.")
 
-        # vals is now an iterable over our starting configuration, be
-        # it complexes or resting states.
-        
+        # vals is now an iterable over our starting configuration
         for i in vals:
-            if not isinstance(i, Complex) :
-                raise ValueError("Start states must be complexes. Received something of type {0}.".format(type(i)))
-        
-            self._add_start_complex(i)
+            if isinstance(i, Complex):
+                self._add_start_complex(i)
+            else:
+                raise TypeError(f"Start states must be Complexes. "
+                                f"Received something of type {type(i)}.")
 
-    def _add_start_complex(self, item):
-        if isinstance(item, Complex):
-            self._start_state.append((item, None))
-            item.set_boltzmann_parameters(self.dangleToString[self.dangles], self.substrate_type, self._temperature_celsius, self._sodium, self._magnesium)
-            
-            if not self.gt_enable and item.boltzmann_sample:
-                raise Warning("Attempting to use Boltzmann sampling but GT pairing is disabled. Energy model of Multistrand will not match that of the NUPACK sampling method.")
-            
-        else:
-            raise ValueError('Expected a Complex as starting state.')
+    def _add_start_complex(self, c: Complex):
+        self._start_state.append(c)
+        c.set_boltzmann_parameters(
+            self.dangleToString[self.dangles],
+            self.substrateToString[self.substrate_type],
+            self._temperature_celsius, self._sodium, self._magnesium)
+        self.warn_Boltzmann_sample_wo_GT(c)
+
+    @property
+    def initial_seed(self):
+        return self._initial_seed if self.initial_seed_flag else None
+
+    @initial_seed.setter
+    def initial_seed(self, seed):
+        self._initial_seed = int(seed)
 
     @property
     def initial_seed_flag(self):
-        return self.initial_seed != None
+        return self._initial_seed != None
     
     @property
     def stop_conditions(self):
@@ -690,7 +776,7 @@ class Options(object):
         # Type checking
         for item in stop_list:
             if not isinstance(item, StopCondition):
-                raise TypeError("All items must be 'StopCondition', not '{0}'.".format(type(item)))
+                raise TypeError(f"All items must be 'StopCondition', not '{type(item)}'.")
         
         # Copy the input list because it's easy to do and it's safer
         stop_list = copy.deepcopy(stop_list)
@@ -914,7 +1000,7 @@ class Options(object):
         self.full_trajectory_arrType.append(val)
         
     @property
-    def interface_current_seed(self):
+    def interface_current_seed(self) -> Optional[int]:
         """ This is the current random number seed for the trajectory currently being
         simulated by multistrand.
 
@@ -926,25 +1012,11 @@ class Options(object):
 
     @interface_current_seed.setter
     def interface_current_seed(self, val):
-        
-        self.interface.current_seed = val
-        
-        def get_structure(s):
-            if s.boltzmann_sample:
-                return s._last_boltzmann_structure
-            else:
-                return s._fixed_structure
-        
-        def process_state(x):
-            cmplx, rest_state = x
-            if rest_state is None:
-                return get_structure(cmplx)
-            else:
-                return get_structure(rest_state.get_starting_complex())
-        
-        structures = [process_state(s) for s in self._start_state]
-        
-        self.interface.start_structures[val] = structures
+        self.interface.current_seed = int(val)
+        get_structure = lambda s: (s._last_boltzmann_structure
+                                   if s.boltzmann_sample else s._fixed_structure)
+        self.interface.start_structures[val] = list(
+            map(get_structure, self._start_state))
 
     @property
     def increment_trajectory_count(self):
@@ -991,47 +1063,26 @@ class Options(object):
             }
         
         # FD: Start throwing errors if not in the right format
-        # FD: This does not prevent the user to set them to ints after options 
-        # FD: initialization (could use overloading via @property to prevent this).
         for key, value in kargs.items():
-            
-            if key == "simulation_time":
+            if key == "sim_time":
                 if not isinstance(value, (float)):
-                    raise Warning("Please provide simulation_time as float")
-                
-            if key == "bimolecular_scaling":
+                    raise Warning("Please provide sim_time as float")
+            if key == "num_sims":
+                if not isinstance(value, (int)):
+                    raise Warning("Please provide num_sims as int")
+            if key == "biscale":
                 if not isinstance(value, (float)):
-                    raise Warning("Please provide bimolecular_scaling as float")
-                
-            if key == "unimolecular_scaling":
+                    raise Warning("Please provide biscale as float")
+            if key == "uniscale":
                 if not isinstance(value, (float)):
-                    raise Warning("Please provide unimolecular_scaling as float")
-        
-        for k in kargs.keys():
-            
-            if k in arg_lookup_table:
-                arg_lookup_table[k](kargs[k])
-                
-            # FD: Do some additional parsing for legacy support            
-            # FD: This code simply translates the string calls to the numerical constants 
-            elif k == 'rate_method':
-                if isinstance(kargs[k], str):
-                    self.rate_method = self.RateMethodToString.index(kargs[k])
-                    
-            elif k == 'dangles':
-                if isinstance(kargs[k], str):
-                    self.dangles = self.dangleToString.index(kargs[k])
+                    raise Warning("Please provide uniscale as float")
+            if key == "concentration":
+                if not isinstance(value, (float)):
+                    raise Warning("Please provide concentration as float")
 
-            elif k == 'parameter_type':
-                if isinstance(kargs[k], str):
-                    self.parameter_type = self.parameterTypeToString.index(kargs[k])
-
-            elif k == 'substrate_type':
-                if isinstance(kargs[k], str):
-                    self.substrate_type = self.substrateToString.index(kargs[k])
-
-            elif k == 'simulation_mode' and isinstance(kargs[k], str):
-                    self.simulation_mode = self.simulationMode[kargs[k]]
-
+        for key, value in kargs.items():
+            if key in arg_lookup_table:
+                arg_lookup_table[key](value)
+            # FD: Do some additional parsing for legacy support
             else:
-                self.__setattr__(k, kargs[k])
+                self.__setattr__(key, value)

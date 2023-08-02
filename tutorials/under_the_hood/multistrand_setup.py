@@ -1,15 +1,21 @@
-from __future__ import print_function
-# multistrand_setup.py
-#
-# This is really unnecessary on most Multistrand installations -- you can just import the multistrand components and be done with it.
-# But using this module instead ("from multistrand_setup import *") might catch a few installation glitches.  So it's useful if your installation has oddities.
+# Multistrand nucleic acid kinetic simulator
+# Copyright (c) 2008-2023 California Institute of Technology. All rights reserved.
+# The Multistrand Team (help@multistrand.org)
+
+"""
+This is really unnecessary on most Multistrand installations -- you can just
+import the multistrand components and be done with it.
+
+But using this module instead ("from multistrand_setup import *") might catch a
+few installation glitches. So it's useful if your installation has oddities.
+"""
 
 import os, sys, subprocess, tempfile
 
 multihome = None
 if 'MULTISTRANDHOME' in os.environ:
-    if not os.path.isfile( os.path.join( os.environ['MULTISTRANDHOME'], 'setup1.py') ):
-        warnings.warn( ImportWarning("Could not find the file 'setup1.py' in your MULTISTRANDHOME [{0}]; this environment variable is possibly out of date or not referring to the new Multistrand distribution."))
+    if not os.path.isfile( os.path.join( os.environ['MULTISTRANDHOME'], 'setup.py') ):
+        warnings.warn( ImportWarning("Could not find the file 'setup.py' in your MULTISTRANDHOME [{0}]; this environment variable is possibly out of date or not referring to the new Multistrand distribution."))
     else:
         if os.environ['MULTISTRANDHOME'] not in sys.path:
             multihome= os.environ['MULTISTRANDHOME']     

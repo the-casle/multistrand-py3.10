@@ -1,42 +1,38 @@
-'''
-Created on Oct 2, 2017
+# Multistrand nucleic acid kinetic simulator
+# Copyright (c) 2008-2023 California Institute of Technology. All rights reserved.
+# The Multistrand Team (help@multistrand.org)
 
-    Frits Dannenberg, June 1th, 2018.
+"""
+The builder code has two classes: Builder and BuilderRate. A Builder will accept
+references to a function that returns a Multistrand Options object. The sampled
+states and transitions will be collected.
 
-    The builder code has two classes: Builder and BuilderRate.
-    A Builder will accept references to a function that returns a multistrand options object.
-    The sampled states and transitions will be collected.
-
-    The BuilderRate accepts a Builder object and will compute the
-    mean first passage time from the starting states until hitting an end state.
-
-'''
-from __future__ import print_function
+The BuilderRate accepts a Builder object and will compute the mean first passage
+time from the starting states until hitting an end state.
+"""
 
 import time, copy, os, sys
 
 from multistrand.system import SimSystem
-from multistrand.utils import uniqueStateID, seqComplement
-from multistrand.options import Options, Literals
+from multistrand.utils import uniqueStateID, seqComplement, GAS_CONSTANT
+from multistrand.options import Literals
 from multistrand.experiment import standardOptions, makeComplex
 
-from scipy.sparse import csr_matrix, coo_matrix, csc_matrix
-from scipy.sparse.linalg import spsolve, bicg, bicgstab, cg, cgs, gmres, lgmres, qmr, inv
+from scipy.sparse import csr_matrix, coo_matrix
+from scipy.sparse.linalg import spsolve, bicg, bicgstab, cg, gmres, lgmres
 
 import numpy as np
 
 floatT = np.float64
 
 
-"""
-    Constructs a surface of  N *  ( N -1 ) / 2 points along the reaction frontier.
-    This method returns a list of starting states that should be used as initial states for the string method.
-    A starting state is a list of complexes.
-"""
-
-
 def hybridizationString(seq):
-
+    """
+    Constructs a surface of N * ( N -1 ) / 2 points along the reaction frontier.
+    This method returns a list of starting states that should be used as initial
+    states for the string method.
+    A starting state is a list of complexes.
+    """
     cutoff = 0.75
     ids = [65, 66]
 
@@ -251,15 +247,13 @@ class localtype(object):
 
 class Energy(object):
 
-    GAS_CONSTANT = floatT(0.0019872036)  # kcal / K mol
-
     dH = 0.0;
     dS = 0.0;
 
     def __init__(self, dG, dH, temp, concentration, n_complexes, n_strands):
         assert(200 < temp < 400)
 
-        RT = self.GAS_CONSTANT * floatT(temp);
+        RT = GAS_CONSTANT * floatT(temp);
         dG_volume = RT * (n_strands - n_complexes) * np.log(1.0 / concentration)
 
         self.dH = floatT(dH)
@@ -876,7 +870,7 @@ class BuilderRate(object):
     def metropolis_rate(self, state1, state2, transitionlist):
 
         myT = self.build.options._temperature_kelvin
-        RT = Energy.GAS_CONSTANT * myT
+        RT = GAS_CONSTANT * myT
 
         dG1 = self.build.protoSpace[state1].dG(myT)
         dG2 = self.build.protoSpace[state2].dG(myT)
@@ -913,7 +907,7 @@ class BuilderRate(object):
         concentration = self.build.options.join_concentration
 
         myT = self.build.options._temperature_kelvin
-        RT = Energy.GAS_CONSTANT * myT
+        RT = GAS_CONSTANT * myT
         dG1 = self.build.protoSpace[state1].dG(myT)
         dG2 = self.build.protoSpace[state2].dG(myT)
 

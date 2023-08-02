@@ -1,8 +1,8 @@
 /*
- Copyright (c) 2017 California Institute of Technology. All rights reserved.
- Multistrand nucleic acid kinetic simulator
- help@multistrand.org
- */
+Multistrand nucleic acid kinetic simulator
+Copyright (c) 2008-2023 California Institute of Technology. All rights reserved.
+The Multistrand Team (help@multistrand.org)
+*/
 
 // Implementation of the StrandComplex object found in scomplex.h
 #include <string.h>
@@ -249,7 +249,6 @@ StrandComplex *StrandComplex::doChoice(Move *move, SimTimer &timer, bool debug)
 
 		if (timer.simOptions->cotranscriptional)
 		{
-
 		// 	 if cotranscriptional is active, print the distance from the origin.
 		// 	 this has to be done with pointer arithmatic, since we have not refactored this (yet).
 
@@ -270,8 +269,6 @@ StrandComplex *StrandComplex::doChoice(Move *move, SimTimer &timer, bool debug)
 			if( dist_left_bp + bound < actives || dist_right_bp + bound < actives ){
 				return NULL;
 			}
-
-
 		}
 
 		if (move->getType() & MOVE_CREATE) // FD: test if we have a create-basepair move

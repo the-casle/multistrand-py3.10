@@ -1,17 +1,20 @@
-# -*- coding: utf-8 -*-
+# Multistrand nucleic acid kinetic simulator
+# Copyright (c) 2008-2023 California Institute of Technology. All rights reserved.
+# The Multistrand Team (help@multistrand.org)
 
-""" Frits Dannenberg, Jun 3rd 2018 
-    Feasability study for builder code for experiments in 
-    
-    Influence of thermodynamically unfavorable
-    secondary structures on DNA hybridization kinetics
-    Hiroaki Hata, Tetsuro Kitajima and Akira Suyama         """
+"""
+Feasability study for builder code for experiments in:
+
+Influence of thermodynamically unfavorable
+secondary structures on DNA hybridization kinetics
+Hiroaki Hata, Tetsuro Kitajima and Akira Suyama
+"""
 
 import sys, time, os
 
 from multistrand.builder import Builder, BuilderRate
 
-from multistrand.options import Options, Literals
+from multistrand.options import Literals
 from multistrand.experiment import standardOptions, hybridization
 
 import numpy as np
@@ -167,7 +170,7 @@ def timings(settings):
 def genFile(mySeqs, nTrials, toggle):
     
     def association_comparison(seq):
-        return Settings(doReactionAssociation, [nTrials, suyamaT, suyamaC, seq], enum_hybridization, title_hybridization)
+        return Settings(doReactionAssociation, [nTrials, suyamaT, suyamaC, seq], title_hybridization, enum_hybridization)
     
     mf = file(RESULT_DIR + "/comparison_" + toggle + "-" + str(nTrials) + ".txt", "w")
     

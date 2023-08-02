@@ -1,4 +1,7 @@
-from __future__ import absolute_import
+# Multistrand nucleic acid kinetic simulator
+# Copyright (c) 2008-2023 California Institute of Technology. All rights reserved.
+# The Multistrand Team (help@multistrand.org)
+
 from ..utils import generate_sequence
 from .strand import Strand
 

@@ -1,22 +1,24 @@
-# Frits Dannenberg, Aug 2017
+# Multistrand nucleic acid kinetic simulator
+# Copyright (c) 2008-2023 California Institute of Technology. All rights reserved.
+# The Multistrand Team (help@multistrand.org)
 
-# simulates ONLY the base reaction.
+"""
+simulates ONLY the base reaction.
 
-# Availability: A Metric for Nucleic Acid Strand Displacement Systems. Xiaoping Olson, Shohei Kotani, Jennifer E. Padilla, 
-# Natalya Hallstrom, Sara Goltry, Jeunghoon Lee, Bernard Yurke, William L. Hughes, and Elton Graugnard
+Availability: A Metric for Nucleic Acid Strand Displacement Systems. Xiaoping
+Olson, Shohei Kotani, Jennifer E. Padilla, Natalya Hallstrom, Sara Goltry,
+Jeunghoon Lee, Bernard Yurke, William L. Hughes, and Elton Graugnard
+"""
 
-
-from multistrand.objects import StopCondition, Domain, Complex, Strand
+from multistrand.objects import StopCondition
 from multistrand.options import Options, Literals
 from multistrand.concurrent import MergeSim
 from multistrand.experiment import makeComplex, standardOptions, setBoltzmann
 
 
-
 def doExperiment(trials):
 
     # complexes
-    
     seqOutput = "CTACTTTCACCCTACGTCTCCAACTAACTTACGG"
     seqSignal = "CCACATACATCATATTCCCTCATTCAATACCCTACG"
     seqBackbone = "TGGAGACGTAGGGTATTGAATGAGGGCCGTAAGTT"
@@ -26,11 +28,9 @@ def doExperiment(trials):
     complex_dotparen += "+" + "."*16 + "("* (len(seqSignal)-16)  
     complex_dotparen += "+" + "." * 6  + ")"* (len(seqBackbone)-6)
     myGate = makeComplex([seqOutput, seqSignal, seqBackbone], complex_dotparen)
-    
-    
+
     seqFuel = "CCTACGTCTCCAACTAACTTACGGCCCTCATTCAATACCCTACG"
     myFuel = makeComplex([seqFuel],"."*len(seqFuel))
-    
     myLeakedSignal = makeComplex([seqSignal], "."*len(seqSignal))
     
     for x in [myGate, myFuel]:
@@ -42,15 +42,11 @@ def doExperiment(trials):
     # the success state is when the leaked signal is observed.
     # we use dissocMacrostate - this only checks the presence of strands in the complex, and 
     # does not depend on dotparens structure.
-    
     successStopping = StopCondition(Literals.success, [(myLeakedSignal, Options.dissoc_macrostate, 0)])
     failedStopping = StopCondition(Literals.failure, [(myFuel, Options.dissoc_macrostate, 0)])
-    
-    
+
     # options
-    
     stdOptions = standardOptions(trials=trials)
-     
     stdOptions.start_state = [myGate, myFuel]
     stdOptions.stop_conditions = [successStopping, failedStopping]
 
@@ -61,22 +57,14 @@ def doExperiment(trials):
     stdOptions.temperature = 25.0  # can run at higher temperature to increase leak rate.
     
     # rate model
-    stdOptions.DNA23Metropolis()
-    #setArrheniusConstantsDNA23(stdOptions)
+    stdOptions.DNA23Arrhenius()
     stdOptions.simulation_time = 10.0
-    
-    
     return stdOptions
 
-    
-    
-# actually calling multistrand
 
+# actually calling multistrand
 myMultistrand = MergeSim()
 myMultistrand.setOptionsFactory1(doExperiment, 5*20*4)
 myMultistrand.setTerminationCriteria(terminationCount=6)
 myMultistrand.setLeakMode()
-
 myMultistrand.run()
-    
-

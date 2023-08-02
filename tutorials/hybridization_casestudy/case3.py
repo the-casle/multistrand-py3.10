@@ -1,4 +1,6 @@
-# Frits Dannenberg, Caltech, 2017.
+# Multistrand nucleic acid kinetic simulator
+# Copyright (c) 2008-2023 California Institute of Technology. All rights reserved.
+# The Multistrand Team (help@multistrand.org)
 
 """
 This script computes density plots of the hybridization reaction. Use this as 
@@ -13,7 +15,7 @@ Some routines are ommited for testing purposes, use:
 """
 from __future__ import print_function
 
-from multistrand.options import Options, Literals
+from multistrand.options import Literals
 from multistrand.concurrent import  MergeSim
 from multistrand.utils import standardFileName
 from multistrand.experiment import  hybridization, standardOptions

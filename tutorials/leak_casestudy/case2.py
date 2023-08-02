@@ -1,13 +1,19 @@
-from __future__ import print_function
-# Mrinank Sharma, Summer 2017, ms2314@cam.ac.uk
-# Clamped Seesaw Gate Case Study
+# Multistrand nucleic acid kinetic simulator
+# Copyright (c) 2008-2023 California Institute of Technology. All rights reserved.
+# The Multistrand Team (help@multistrand.org)
+
+"""
+Clamped Seesaw Gate Case Study
+"""
+
 import time
 from enum import Enum
 
-from multistrand.concurrent import MergeSim, FirstStepRate, Bootstrap
-from multistrand.objects import StopCondition
-from multistrand.options import Literals
-from multistrand.experiment import ClampedSeesawGate, seesaw_gate_fuel_catalysis, seesaw_gate_gate_leak, seesaw_gate_output_production, seesaw_gate_fuel_leak, standardOptions
+from multistrand.concurrent import MergeSim
+from multistrand.options import Options
+from multistrand.experiment import \
+    ClampedSeesawGate, seesaw_gate_fuel_catalysis, seesaw_gate_gate_leak, \
+    seesaw_gate_output_production, seesaw_gate_fuel_leak, standardOptions
 
 myMultistrand = MergeSim()
 
@@ -98,7 +104,7 @@ def getExperiment(selIn):
 def genOptions(trialsIn, gateA, sel, supersample=25, gateB=None):
     
     stdOptions = standardOptions(
-        Literals.first_step, tempIn=45.0, trials=trialsIn, timeOut=ATIME_OUT)
+        Options.firstStep, tempIn=45.0, trials=trialsIn, timeOut=ATIME_OUT)
     if gateB == None:
         getExperiment(sel)(stdOptions, gateA, trialsIn, supersample)
     else:

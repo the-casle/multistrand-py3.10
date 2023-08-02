@@ -1,13 +1,9 @@
 /*
-Copyright (c) 2017 California Institute of Technology. All rights reserved.
 Multistrand nucleic acid kinetic simulator
-help@multistrand.org
+Copyright (c) 2008-2023 California Institute of Technology. All rights reserved.
+The Multistrand Team (help@multistrand.org)
 */
 
-/*
- *  Created on: Jun 5, 2016
- *      Author: Frits Dannenberg
- */
 #include <vector>
 #include <iostream>
 #include <string>
@@ -66,7 +62,7 @@ double EnergyOptions::getJoinConcentration(void) {
 
 bool EnergyOptions::usingArrhenius(void) {
 
-	return (3 == kinetic_rate_method);
+	return (kinetic_rate_method == RATE_METHOD_ARRHENIUS);
 
 }
 
@@ -118,17 +114,18 @@ string EnergyOptions::toString(void) {
 PEnergyOptions::PEnergyOptions(PyObject* input) :
 		EnergyOptions() {
 
-// extended constructor, inherits from regular energyOptions
+	// extended constructor, inherits from regular energyOptions
 
 	python_settings = input;
-	getDoubleAttr(python_settings, temperature, &temperature);
-	getLongAttr(python_settings, dangles, &dangles);
+
+	getDoubleAttrReify(python_settings, temperature, &temperature);
+	getLongAttrReify(python_settings, dangles, &dangles);
 	getLongAttr(python_settings, log_ml, &logml);
 	getBoolAttr(python_settings, gt_enable, &gtenable);
 	getLongAttr(python_settings, rate_method, &kinetic_rate_method);
 
-	getDoubleAttr(python_settings, bimolecular_scaling, &biScale);
-	getDoubleAttr(python_settings, unimolecular_scaling, &uniScale);
+	getDoubleAttrReify(python_settings, bimolecular_scaling, &biScale);
+	getDoubleAttrReify(python_settings, unimolecular_scaling, &uniScale);
 	getDoubleAttr(python_settings, join_concentration, &joinConcentration);
 
 
@@ -138,6 +135,7 @@ PEnergyOptions::PEnergyOptions(PyObject* input) :
 		cout << "  or set `Options.bimolecular_scaling` directly."<< endl;
 		cout << "  Reverting to `bimolecular_scaling = 1.38e+6` from `Options.JSDefault()`."<< endl;
 
+		kinetic_rate_method = RATE_METHOD_KAWASAKI;
 		biScale = 1.38e+6;
 	}
 	if(!usingArrhenius() && uniScale < 0.0){
@@ -146,6 +144,7 @@ PEnergyOptions::PEnergyOptions(PyObject* input) :
 		cout << "  or set `Options.unimolecular_scaling` directly."<< endl;
 		cout << "  Reverting to `unimolecular_scaling = 1.50e+08` from `Options.JSDefault()`."<< endl;
 
+		kinetic_rate_method = RATE_METHOD_KAWASAKI;
 		uniScale = 1.50e+08;
 	}
 
@@ -203,8 +202,8 @@ PEnergyOptions::PEnergyOptions(PyObject* input) :
 	}
 
 	// ionic conditions
-	getDoubleAttr(python_settings, sodium, &sodium);
-	getDoubleAttr(python_settings, magnesium, &magnesium);
+	getDoubleAttrReify(python_settings, sodium, &sodium);
+	getDoubleAttrReify(python_settings, magnesium, &magnesium);
 
 	if (magnesium < 0.00 || magnesium > 0.2) {
 
@@ -224,7 +223,7 @@ PEnergyOptions::PEnergyOptions(PyObject* input) :
 
 }
 
-bool PEnergyOptions::compareSubstrateType(long type) {
+bool PEnergyOptions::compareSubstrateType(int type) {
 
 	return testLongAttr(python_settings, substrate_type, =, type);
 

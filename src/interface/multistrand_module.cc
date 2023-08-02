@@ -1,7 +1,10 @@
 /*
- Copyright (c) 2009-2010 Caltech. All rights reserved.
- Coded by: Joseph Schaeffer (schaeffer@dna.caltech.edu)
+Multistrand nucleic acid kinetic simulator
+Copyright (c) 2008-2023 California Institute of Technology. All rights reserved.
+The Multistrand Team (help@multistrand.org)
+*/
 
+/*
  A simple extension module for python that exposes the
  SimulationSystem object as a createable object that has one method.
  */
@@ -368,7 +371,7 @@ static PyMethodDef System_methods[] = {
 	{ "energy", (PyCFunction) System_calculate_energy,
 	  METH_VARARGS, PyDoc_STR(" \
 energy( start_state, options=None, energy_type=0)\n\
-Computes the energy of the passed state [a list of complexes or resting states], using \
+Computes the energy of the passed state [a list of complexes], using \
 temperature, etc, settings from the options object passed.\n\n\
 Parameters\n\
 energy_type = options.Energy_Type.Loop_energy    : [default] no volume or association terms included. So only loop energies remain.\n\

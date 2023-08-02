@@ -1,3 +1,7 @@
+# Multistrand nucleic acid kinetic simulator
+# Copyright (c) 2008-2023 California Institute of Technology. All rights reserved.
+# The Multistrand Team (help@multistrand.org)
+
 
 # Often recurring experimental setups
 from multistrand.objects import Complex, Domain, Strand, StopCondition
@@ -10,30 +14,26 @@ def setBoltzmann(complexIn, trials, supersample=1):
     complexIn.boltzmann_sample = True
 
 
-# easy handle for options creation
-def standardOptions(simMode=Literals.first_step, tempIn=25.0, trials=10, timeOut=0.1):
-
+def standardOptions(simMode=Literals.first_step,
+                    tempIn=Options.ZERO_C_IN_K + 25.0, trials=10, timeOut=0.1):
+    """
+    Easy handle for options creation.
+    """
     output = Options(simulation_mode=simMode,
                      num_simulations=trials,
                      simulation_time=timeOut,
-                     temperature=tempIn
-                     )
-
+                     temperature=tempIn)
     output.DNA23Metropolis()
-    output.rate_method = Literals.metropolis
-
     return output
 
 
-''' Creates a Complex when given a list of sequences and a dotparen
-    When ids are set, the strands will be given an ID after creation, 
-    which is important when combining Builder objects: Strands should have equal 
-    names and IDs in order to merge the statespaces correctly.
-'''
-
-
 def makeComplex(sequences, dotparen, ids=None):
-
+    """
+    Creates a Complex when given a list of sequences and a dotparen
+    When ids are set, the strands will be given an ID after creation,
+    which is important when combining Builder objects: Strands should have equal
+    names and IDs in order to merge the statespaces correctly.
+    """
     strandList = []
 
     for i in range(len(sequences)):
@@ -135,10 +135,12 @@ def dissociation(options, mySeq, myTrials=0):
     top = Strand(name="top", domains=[onedomain])
     bot = top.C
 
-    # Note that the structure is specified to be single stranded, but this will be over-ridden when Boltzmann sampling is turned on.
+    # Note that the structure is specified to be single stranded, but this will
+    # be over-ridden when Boltzmann sampling is turned on.
     duplex = Complex(strands=[top, bot], structure="(+)")
 
-    # Turns Boltzmann sampling on for this complex and also does sampling more efficiently by sampling 'trials' states.
+    # Turns Boltzmann sampling on for this complex and also does sampling more
+    # efficiently by sampling 'trials' states.
     if(myTrials > 0):
         setBoltzmann(duplex, myTrials)
 

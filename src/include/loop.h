@@ -1,8 +1,9 @@
 /*
-Copyright (c) 2017 California Institute of Technology. All rights reserved.
 Multistrand nucleic acid kinetic simulator
-help@multistrand.org
+Copyright (c) 2008-2023 California Institute of Technology. All rights reserved.
+The Multistrand Team (help@multistrand.org)
 */
+
 /* Loop class header for main loop class and derivatives. */
 
 #ifndef __LOOP_H__
@@ -51,10 +52,11 @@ public:
 	virtual void calculateEnthalpy(void){};	// TODO: implement this.
 	virtual void generateMoves(void) = 0;
 	virtual void generateDeleteMoves(void) = 0;
+	virtual void regenerateDeleteMoves(void) = 0;
 	virtual Move *getChoice(SimTimer& timer, Loop *from) = 0;
 	virtual double doChoice(Move *move, Loop **returnLoop) = 0;
-	virtual BaseType *getLocation(Move *move, int index) =0;
-	virtual BaseType *verifyLoop(BaseType *incoming_sequence, Loop *from) =0;
+	virtual BaseType *getLocation(Move *move, int index) = 0;
+	virtual BaseType *verifyLoop(BaseType *incoming_sequence, Loop *from) = 0;
 	virtual string typeInternalsToString(void) = 0;
 	virtual void printMove(Loop *comefrom, char *structure_p, BaseType *seq_p) = 0;
 	Loop *getAdjacent(int index);
@@ -109,6 +111,7 @@ public:
 	void calculateEnthalpy(void);
 	void generateMoves(void);
 	void generateDeleteMoves(void);
+	void regenerateDeleteMoves(void);
 	Move *getChoice(SimTimer& timer, Loop *from);
 	double doChoice(Move *move, Loop **returnLoop);
 	void printMove(Loop *comefrom, char *structure_p, BaseType *seq_p);
@@ -131,6 +134,7 @@ public:
 	void calculateEnthalpy(void);
 	void generateMoves(void);
 	void generateDeleteMoves(void);
+	void regenerateDeleteMoves(void);
 	Move *getChoice(SimTimer& timer, Loop *from);
 	double doChoice(Move *move, Loop **returnLoop);
 	void printMove(Loop *comefrom, char *structure_p, BaseType *seq_p);
@@ -155,6 +159,7 @@ public:
 	void calculateEnthalpy(void);
 	void generateMoves(void);
 	void generateDeleteMoves(void);
+	void regenerateDeleteMoves(void);
 	Move *getChoice(SimTimer& timer, Loop *from);
 	double doChoice(Move *move, Loop **returnLoop);
 	void printMove(Loop *comefrom, char *structure_p, BaseType *seq_p);
@@ -178,6 +183,7 @@ public:
 	void calculateEnthalpy(void);
 	void generateMoves(void);
 	void generateDeleteMoves(void);
+	void regenerateDeleteMoves(void);
 	Move *getChoice(SimTimer& timer, Loop *from);
 	double doChoice(Move *move, Loop **returnLoop);
 	void printMove(Loop *comefrom, char *structure_p, BaseType *seq_p);
@@ -202,6 +208,7 @@ public:
 	void calculateEnthalpy(void);
 	void generateMoves(void);
 	void generateDeleteMoves(void);
+	void regenerateDeleteMoves(void);
 	Move *getChoice(SimTimer& timer, Loop *from);
 	double doChoice(Move *move, Loop **returnLoop);
 	void printMove(Loop *comefrom, char *structure_p, BaseType *seq_p);
@@ -227,6 +234,7 @@ public:
 	void calculateEnthalpy(void);
 	void generateMoves(void);
 	void generateDeleteMoves(void);
+	void regenerateDeleteMoves(void);
 	Move *getChoice(SimTimer& timer, Loop *from);
 	double doChoice(Move *move, Loop **returnLoop);
 	void printMove(Loop *comefrom, char *structure_p, BaseType *seq_p);

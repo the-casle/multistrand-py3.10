@@ -1,14 +1,8 @@
 /*
- Copyright (c) 2017 California Institute of Technology. All rights reserved.
- Multistrand nucleic acid kinetic simulator
- help@multistrand.org
- */
-
-/*
- *
- *  Created on: Jun 5, 2016
- *      Author: Frits Dannenberg
- */
+Multistrand nucleic acid kinetic simulator
+Copyright (c) 2008-2023 California Institute of Technology. All rights reserved.
+The Multistrand Team (help@multistrand.org)
+*/
 
 #include "options.h"	 // python options helper
 #include "ssystem.h"
@@ -53,12 +47,8 @@ PSimOptions::PSimOptions(PyObject* input) :
 	// initializers calling python object -- these can use a super object getter.
 	// Not clear at the moment if calling all settings is possible without crashing.
 	getBoolAttr(python_settings, initial_seed_flag, &fixedRandomSeed);
-
-	if (fixedRandomSeed) {
-
-		getDoubleAttr(python_settings, initial_seed, &seed);
-
-	}
+	if (fixedRandomSeed)
+		getLongAttr(python_settings, initial_seed, &seed);
 
 	energyOptions = new PEnergyOptions(python_settings);
 

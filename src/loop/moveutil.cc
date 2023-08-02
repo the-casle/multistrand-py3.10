@@ -1,8 +1,8 @@
 /*
- Copyright (c) 2017 California Institute of Technology. All rights reserved.
- Multistrand nucleic acid kinetic simulator
- help@multistrand.org
- */
+Multistrand nucleic acid kinetic simulator
+Copyright (c) 2008-2023 California Institute of Technology. All rights reserved.
+The Multistrand Team (help@multistrand.org)
+*/
 
 #include <moveutil.h>
 #include <sequtil.h>
@@ -87,9 +87,7 @@ std::ostream& operator<<(std::ostream &ss, OpenInfo& m) {
 	}
 
 	ss << "Intern / Total = " << m.numExposedInternal << " / ";
-	ss << m.numExposed << "	\n";
-
-	ss << "\n";
+	ss << m.numExposed << "\n";
 
 	return ss;
 

@@ -1,45 +1,41 @@
+# Multistrand nucleic acid kinetic simulator
+# Copyright (c) 2008-2023 California Institute of Technology. All rights reserved.
+# The Multistrand Team (help@multistrand.org)
+
+"""
+This module has three main classes
+
+MergeResult: Given multistrand results, compute reaction rate constants.
+MergeSim:    A class for running multistrand concurrently
+Bootstrap:   A convenience class to compute bootstrapped confidence bounds.
+
+MergeResult children: FirstStepRate, FirstStepLeakRate, FirstPassageRate
+
+The MergeSim.run() method always returns of the MergeResult sub-classes.
 """
 
-    Frits Dannenberg, May 17th, 2017.
-    This module has three main classes
-
-    MergeResult: Given multistrand results, compute reaction rate constants.
-    MergeSim:    A class for running multistrand concurrently 
-    Bootstrap:   A convenience class to compute bootstrapped confidence bounds.
-
-    MergeResult children: FirstStepRate, FirstStepLeakRate, FirstPassageRate
-
-    The MergeSim.run() method always returns of the MergeResult sub-classes.
-    
-"""
-from __future__ import print_function
-import operator
-import os
 import time
 import datetime
 import math
-import traceback
 import copy
 import sys
-import random
 
-from multistrand.options import Options, Literals
-import multiprocess as multiprocessing
 import numpy as np
+import multiprocess
 
-from nupack import *
-
-from multistrand.system import SimSystem
+from .options import Literals
+from .system import SimSystem
+from .utils import printTrajectory
+from .__init__ import __version__
 
 MINIMUM_RATE = 1e-36
 
 
-class MergeResult(object):
+class MergeResult:
 
     """ Endstates are not saved for first step leak mode """
 
     def __init__(self, dataset=None, endStates=None):
-         
         if dataset == None:
             dataset = []
         if endStates == None:
@@ -59,7 +55,6 @@ class MergeResult(object):
         self.generateCounts()
             
     def generateCounts(self):
-
         # Pre-computing some metrics
         self.nForward = sum((i.tag == Literals.success for i in self.dataset))
         self.nReverse = sum((i.tag == Literals.failure for i in self.dataset))
@@ -67,7 +62,6 @@ class MergeResult(object):
         self.nTotal = len(self.dataset)
         
     def merge(self, that, deepCopy=False):
-
         # Now merge the existing datastructures with the ones from the new dataset
         if deepCopy:
             for data in that.dataset:
@@ -93,10 +87,8 @@ class MergeResult(object):
         print("Test for two-stateness is not implemented for this object (type: " + type(self).__name__ + ")\n")
 
     def __str__(self):
-        if self.myBootstrap != None:
-            return self.myBootstrap.__str__() + "\n"
-        else:
-            return ""
+        return (f"{self.__class__.__name__}:\n" + (
+            "" if self.myBootstrap is None else f"{self.myBootstrap}\n"))
 
 
 # Migration rates for first step
@@ -207,33 +199,22 @@ class FirstStepRate(MergeResult):
 
     # # override toString
     def __str__(self):
-        print("nForward = " + str(self.nForward))
-        print("nReverse = " + str(self.nReverse))
-        
-        output = ""
-        if(self.nForward > 0):
-            output += "k1       = %.2e  /M /s  \n" % self.k1()
-        if(self.nReverse > 0):
-            output += "k1'      = %.2e /M /s \n" % self.k1Prime()
-        if(self.nForward > 0):
-            output += "k2       = %.2e  /M /s  \n" % self.k2()
-        if(self.nReverse > 0):
-            output += "k2'      = %.2e /M /s \n" % self.k2Prime()
-        output += super(FirstStepRate, self).__str__()
+        output = super(FirstStepRate, self).__str__()
+        output += f"  nForward = {self.nForward}\n"
+        output += f"  nReverse = {self.nReverse}\n"
+
+        if self.nForward > 0:
+            output += "  k1  = %.3g /M /s\n" % self.k1()
+        if self.nReverse > 0:
+            output += "  k1' = %.3g /M /s\n" % self.k1Prime()
+        if self.nForward > 0:
+            output += "  k2  = %.3g /M /s\n" % self.k2()
+        if self.nReverse > 0:
+            output += "  k2' = %.3g /M /s\n" % self.k2Prime()
 
         # suc = (x for x in self.dataset if (x.tag==Literals.success or x.tag==Literals.failure))
         # for x in suc:
         #     output+= x.__str__() +"\n\n"
-        return output
-
-    def shortString(self):
-        output = "nForward = " + str(self.nForward) + " \n"
-        output += "nReverse = " + str(self.nReverse) + " \n \n"
-
-        if self.nForwardAlt > 0:
-            output += "nForwardAlt = " + str(self.nForwardAlt)
-        if(self.nForward > 0):
-            output += "k1       = %.2e  /M /s  \n" % self.k1()
         return output
 
 
@@ -300,28 +281,16 @@ class FirstStepLeakRate(MergeResult):
         self.nTotal += that.nTotal
 
     def __str__(self):
-        output = "nForward = " + str(self.nForward) + " \n"
-        output += "nReverse = " + str(self.nReverse) + " \n \n"
-        
-        if self.nForwardAlt > 0:
-            output += "nForwardAlt = " + str(self.nForwardAlt) + "\n"
-        if(self.nForward > 0):
-            output += "k1       = %.2e  /M /s  \n\n" % self.k1()
-        if(self.nForwardAlt > 0):
-            output += "k1Alt       = %.2e  /M /s  \n" % self.k1Alt()
-        output += super(FirstStepLeakRate, self).__str__() + "\n"
-        return output
-
-    def shortString(self):
-        output = "nForward = " + str(self.nForward) + " \n"
-        output += "nReverse = " + str(self.nReverse) + " \n \n"
+        output = super(FirstStepLeakRate, self).__str__()
+        output += f"  nForward = {self.nForward}\n"
+        output += f"  nReverse = {self.nReverse}\n"
 
         if self.nForwardAlt > 0:
-            output += "nForwardAlt = " + str(self.nForwardAlt) + "\n"
-        if(self.nForward > 0):
-            output += "k1       = %.2e  /M /s  \n\n" % self.k1()
-        if(self.nForwardAlt > 0):
-            output += "k1Alt       = %.2e  /M /s  \n" % self.k1Alt()
+            output += "  nForwardAlt = " + str(self.nForwardAlt) + "\n"
+        if self.nForward > 0:
+            output += "  k1    = %.3g /M /s\n" % self.k1()
+        if self.nForwardAlt > 0:
+            output += "  k1Alt = %.3g /M /s\n" % self.k1Alt()
         return output
 
 
@@ -336,7 +305,7 @@ class FirstPassageRate(MergeResult):
 
     def k1(self):
         mean = np.mean([i.time for i in self.dataset])
-        return np.float64(1.0) / (mean)
+        return np.float64(1.0) / mean
 
     def kEff(self, concentration):
         mean = np.mean([i.time for i in self.dataset])
@@ -344,9 +313,9 @@ class FirstPassageRate(MergeResult):
         return kEff
 
     def __str__(self):
-        output = "nForward: %d \n" % self.nForward
-        output += "k1 = %.3g \n" % self.k1()
-        output += super(FirstPassageRate, self).__str__() 
+        output = super(FirstPassageRate, self).__str__()
+        output += "  nForward: %d\n" % self.nForward
+        output += "  k1 = %.3g /M /s\n" % self.k1()
         return output
 
 
@@ -420,10 +389,11 @@ class Bootstrap():
         else :
             return "No successful reactions observed "
 
-# # Concurrent classes start here
+
+# Concurrent classes start here ==============================================
 
 
-class optionsFactory(object):
+class optionsFactory:
 
     def __init__(self, funct, put0, put1, put2, put3, put4, put5, put6):
         self.myFunction = funct
@@ -436,8 +406,10 @@ class optionsFactory(object):
         self.input6 = put6
 
     def new(self, inputSeed):
-        output = None
+        # The input0 is always trials.
+        assert isinstance(self.input0, int)
 
+        output = None
         if self.input1 == None:
             output = self.myFunction(self.input0)
         elif self.input2 == None:
@@ -463,7 +435,7 @@ class optionsFactory(object):
         return output
 
 
-class MergeSimSettings(object):
+class MergeSimSettings:
 
     RESULTTYPE1 = "FirstStepRate"
     RESULTTYPE2 = "FirstStepLeakRate"
@@ -533,29 +505,36 @@ def timeStamp(inTime=None):
     return str(datetime.datetime.fromtimestamp(inTime).strftime('%Y-%m-%d %H:%M:%S'))
 
 
-# This class has two modus operandi:
-# 1) self.settings.resultsType == self.settings.RESULTTYPE4  (default)
-#   In this mode, SimSystem.results and SimSystem.end_states are made available as
-#   myMR = MergeSim.run ()  via myMR.datasetand and myMR.endStates (renaming is deliberate)
-# 2) self.settings.resultsType != self.settings.RESULTTYPE0:
-#    In this mode, the system generates MergeResults objects that compute k1(), kEff() (possibly more)
-#    in a multi-processing fashion.
-# In addition, users can populate the analysisFactory with an objec to custom
-# in-process analysis (for example, computing metrics on traces) 
-class MergeSim(object):
+class MergeSim:
+    """
+    This class has two modus operandi:
+
+    1) `self.settings.resultsType == self.settings.RESULTTYPE1`  (default)
+
+          In this mode, `SimSystem.results` and `SimSystem.end_states` are made
+          available as `myMR = MergeSim.run()` via `myMR.dataset` and
+          `myMR.endStates` (renaming is deliberate)
+
+    2) `self.settings.resultsType != self.settings.RESULTTYPE1`
+
+          In this mode, the system generates `MergeResults` objects that compute
+          `k1(), kEff()` (possibly more) in a multi-processing fashion.
+
+    In addition, users can `setAnaylsisFactory()` for custom in-process analysis
+    (for example, computing metrics on traces).
+    """
 
     numOfThreads = 2
     seed = 7713147777
-    ctx = multiprocessing.get_context()
 
     def __init__(self, settings=None):
         self.initializationTime = time.time()
-        if(multiprocessing.current_process().name == "MainProcess"):
-            print("%s%s" % (timeStamp(), "  Starting Multistrand 2.3      (c) 2008-2023 Caltech      "))
+        if multiprocess.current_process().name == "MainProcess":
+            print(f"{timeStamp()}   Starting Multistrand {__version__}  "
+                  f"(c) 2008-2023 Caltech")
 
         self.factory = optionsFactory
         self.aFactory = None
-
         if settings == None:
             self.settings = MergeSimSettings()
 
@@ -620,28 +599,34 @@ class MergeSim(object):
         self.factory = optionsFactory(
             myFun, put0, put1, put2, put3, put4, put5, put6)
 
-    # If the analysis factory is set,
-    # then perform an threaded analysis of the returned data.
-    # E.g. the analysis factory receives a set of locks and
-    # the simulation will call aFactory.doAnalysis(options)
-    # once for each thread.
-    # This is used really only for one case study, but could be reused in the future
     def setAnaylsisFactory(self, aFactoryIn):
+        """
+        If the analysis factory is set,
+        then perform an threaded analysis of the returned data.
+        E.g. the analysis factory receives a set of locks and
+        the simulation will call aFactory.doAnalysis(options)
+        once for each thread.
+        This is used really only for one case study, but could be reused in the future
+        """
         lockArray = list()
         for i in range(16):
-            lockArray.append(multiprocessing.Lock())
+            lockArray.append(multiprocess.Lock())
 
         self.aFactory = aFactoryIn
         self.aFactory.lockArray = lockArray
 
-    # reset the multithreading objects
     def clearAnalysisFactory(self):
+        """
+        Reset the multithreading objects.
+        """
         if not self.aFactory == None:
             self.aFactory.clear()
 
     def printTrajectories(self, myOptions):
-        # # Print all the trajectories we can find.
-        # # Debug function primairly.
+        """
+        Print all the trajectories we can find.
+        Debug function primairly.
+        """
         print("Printing trajectory and times: \n")
 
         trajs = myOptions.full_trajectory
@@ -660,31 +645,7 @@ class MergeSim(object):
         s = SimSystem(o1)
         s.start()
 
-        seqstring = " "
-        for i in range(len(o1.full_trajectory)):
-            timeT = 1e3 * o1.full_trajectory_times[i]
-            states = o1.full_trajectory[i]
-            
-            ids = []
-            newseqs = []
-            structs = []
-            dG = 0.0;
-            
-            pairTypes = []
-            for state in states:
-                ids += [ str(state[2]) ]
-                newseqs += [ state[3] ]  # extract the strand sequences in each complex (joined by "+" for multistranded complexes)
-                structs += [ state[4] ]  # similarly extract the secondary structures for each complex
-                dG += dG + state[5]
-                
-            newseqstring = ' '.join(newseqs)  # make a space-separated string of complexes, to represent the whole tube system sequence
-            tubestruct = ' '.join(structs)  # give the dot-paren secondary structure for the whole test tube
-            
-            if not newseqstring == seqstring : 
-                print(newseqstring)
-                seqstring = newseqstring  # because strand order can change upon association of dissociation, print it when it changes        
-
-            print(f"{tubestruct}   t={timeT:.6f} ms,  dG={dG:3.2f} kcal/mol  ")
+        printTrajectory(o1)
 
     def initialInfo(self):
         myOptions = self.factory.new(777)
@@ -693,7 +654,6 @@ class MergeSim(object):
 
     def startSimMessage(self):
         welcomeMessage = "Using Results Type: " + self.settings.resultsType + "\n"
-        # python2 style printing because of an compilation issue with web.py
         welcomeMessage += ''.join(["Computing ", str(
             self.numOfThreads * self.trialsPerThread), " trials, using ", str(self.numOfThreads), " threads .. \n"])
 
@@ -719,7 +679,7 @@ class MergeSim(object):
             for x in options.stop_conditions:
                 myString += x.__str__() + "\n"
 
-        myProc = self.ctx.Process(target=hiddenPrint, args=[outputString])
+        myProc = multiprocess.Process(target=hiddenPrint, args=[outputString])
         myProc.start()
         myProc.join()
         myProc.terminate()
@@ -746,26 +706,25 @@ class MergeSim(object):
             print("Start states:")
             for i in self.factory.new(0).start_state:
                 print(i)
-                print("\n")
+                print()
                 
             print("Stop conditions: ")
             for i in self.factory.new(0).stop_conditions:
                 print(i)
-                print("\n")
+                print()
 
-        myProc = self.ctx.Process(target=actualPrint, args=[])
+        myProc = multiprocess.Process(target=actualPrint, args=[])
         myProc.start()
         myProc.join()
         myProc.terminate()
 
     def run(self):
-        # The input0 is always trials.
         self.trialsPerThread = int(
             math.ceil(float(self.factory.input0) / float(self.numOfThreads)))
         startTime = time.time()
         assert(self.numOfThreads > 0)
 
-        manager = multiprocessing.Manager()
+        manager = multiprocess.Manager()
 
         self.exceptionFlag = manager.Value('b', True)
         self.managed_result = manager.list()
@@ -783,12 +742,11 @@ class MergeSim(object):
             except:
                 self.exceptionFlag.value = False
                 return
-
-            """ Overwrite the result factory method if we are not using First Step Mode.
-                By default, the results object is a First Step object.
-            """
-            if not myOptions.simulation_mode == Literals.first_step:
-                self.settings.rateFactory().first_passage_time = MergeSimSettings.RESULTTYPE3 # not sure what the param should be here
+            
+            # Overwrite the result factory method if we are not using First Step Mode.
+            # By default, the results object is a First Step object.
+            if myOptions.simulation_mode != Literals.first_step:
+                self.setPassageMode()
 
             try:
                 s = SimSystem(myOptions)
@@ -812,12 +770,13 @@ class MergeSim(object):
 
         def getSimulation(input):
             instanceSeed = self.seed + input * 3 * 5 * 19 + (time.time() * 10000) % (math.pow(2, 32) - 1)
-            return self.ctx.Process(target=doSim, args=(self.factory, self.aFactory, self.managed_result, self.managed_endStates, instanceSeed, self.nForward, self.nReverse))
+            return multiprocess.Process(target=doSim, args=(
+                self.factory, self.aFactory, self.managed_result,
+                self.managed_endStates, instanceSeed, self.nForward, self.nReverse))
 
         # this saves the results generated so far as regular Python objects,
         # and clears the concurrent result lists.
         def saveResults():
-
             if self.settings.terminationCount == None:
                 # just let the threads join peacefully
                for i in range(self.numOfThreads):
@@ -875,7 +834,7 @@ class MergeSim(object):
                     procs[i] = getSimulation(i)
                     procs[i].start()
                     printFlag = True
-            time.sleep(0.25)
+            time.sleep(0.2)
 
             # if >500 000 results have been generated, then store
             if (self.nForward.value + self.nReverse.value) > self.settings.saveInterval:
@@ -886,12 +845,8 @@ class MergeSim(object):
 
         saveResults()
 
-        # print final results to the user
-        """ is not cleak """
         if not self.settings.resultsType == MergeSimSettings.RESULTTYPE2:
             self.results.generateCounts()
-        print(self.results)
-
         if self.settings.bootstrap == True:
             self.results.doBootstrap(self.settings.bootstrapN)
 
