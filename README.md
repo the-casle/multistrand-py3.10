@@ -55,9 +55,6 @@ Questions should be directed to help@multistrand.org.
 | C++11      | gcc 7.4 or clang 8.0.0 |
 | Python     | 3.8+   |
 | [NUPACK](https://www.nupack.org/) | 3.2.2 |
-| build      | 0.10.0+ | 
-
-JAKE MERGE: Do we need build as a dependency?
  
 The `numpy` and `scipy` Python packages are installed automatically as
 dependencies, and `matplotlib` is added if the installation target `tutorials`

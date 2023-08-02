@@ -24,10 +24,6 @@ BaseCount emptyBaseCount;
 // JS: i'd like to optimize this lookup. It really should be just a bitwise
 //  or, and an array lookup, the extra function call annoys me.
 
-// JAKE: bruh what are you talking about this is called like 45 times total when initializing the energy system. This is not where you are getting a slowdown and I'm kinda annoyed
-// that you chose to use your time focussing on issues like this that made the project so convoluted for next to no actual speedup
-
-
 extern BaseType baseLookup(char base);
 
 StrandComplex::StrandComplex(char *seq, char *struc)

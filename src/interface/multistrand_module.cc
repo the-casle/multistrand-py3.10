@@ -122,7 +122,7 @@ static int SimSystemObject_clear(SimSystemObject *self) {
 }
 
 static void SimSystemObject_dealloc(SimSystemObject *self) {
-	PyObject_GC_UnTrack(self); // JAKE MERGE: What does this do?
+	PyObject_GC_UnTrack(self);
 
 	if (self->ob_system != NULL) {
 		delete self->ob_system;

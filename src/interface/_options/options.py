@@ -107,7 +107,7 @@ class Options(object):
     cotranscriptional_rate_default = 0.001  # 1 nt added every 1 ms
     
     activestatespace = False;
-    reuse_energymodel = False; # JAKE MERGE: Is this actually hooked up to anything?
+    reuse_energymodel = False;
     
     def __init__(self, *args, **kargs):
         """

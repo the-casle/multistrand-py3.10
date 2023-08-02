@@ -36,7 +36,7 @@ The Multistrand Team (help@multistrand.org)
 #define getStringAttr(obj, name, pyo) (char *)PyUnicode_AsUTF8(pyo=PyObject_GetAttrString(obj, #name))
 #define getStringAttrReify(obj, name, pyo) PyUnicode_AsUTF8(pyo=_m_reify_GetAttrString(obj, #name))
 #define getListAttr(obj, name) PyObject_GetAttrString(obj, #name)
-#define getListAttrReify(obj, name) _m_reify_GetAttrString(obj, #name) // JAKE MERGE: Why are these functions needed?
+#define getListAttrReify(obj, name) _m_reify_GetAttrString(obj, #name)
 
 /* List indexing (ref counting caller responsibility) */
 #define getStringItem(list, index) PyUnicode_AsUTF8(PyList_GET_ITEM(list, index))
