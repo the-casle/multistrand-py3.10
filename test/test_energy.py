@@ -91,7 +91,8 @@ class Test_SingleStrandEnergy:
                          complexes: Tuple[Iterable[str], Iterable[str]]) -> None:
         for seq, struct in zip(*complexes):
             assert len(seq) == len(struct)
-            e_nupack = nupack.energy([seq], struct, material='dna')
+            model1 = nupack.Model(material='dna', ensemble="some-nupack3")
+            e_nupack = nupack.energy([seq], struct, model=model1)
             c_multistrand = Complex(
                 strands=[Strand(name="hairpin", sequence=seq)], structure=struct)
             e_multistrand = energy(

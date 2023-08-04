@@ -2570,7 +2570,7 @@ void StackLoop::regenerateDeleteMoves(void) {
 	generateMoves();
 }
 
-void StackLoop::printMove(Loop *comefrom, char *structure_p, char *seq_p) {
+void StackLoop::printMove(Loop *comefrom, char *structure_p, BaseType *seq_p) {
 	int loop;
 	structure_p[seqs[0] - seq_p] = (seqs[0] < seqs[1]) ? '(' : ')';
 	structure_p[seqs[1] - seq_p + 1] = (seqs[0] < seqs[1]) ? ')' : '(';
@@ -2915,7 +2915,7 @@ void HairpinLoop::regenerateDeleteMoves(void) {
 	generateMoves();
 }
 
-void HairpinLoop::printMove(Loop *comefrom, char *structure_p, char *seq_p) {
+void HairpinLoop::printMove(Loop *comefrom, char *structure_p, BaseType *seq_p) {
 	int loop;
 	structure_p[hairpin_seq - seq_p] = '(';
 	structure_p[hairpin_seq - seq_p + 1 + hairpinsize] = ')';
@@ -3192,7 +3192,7 @@ void BulgeLoop::regenerateDeleteMoves(void) {
 	generateMoves();
 }
 
-void BulgeLoop::printMove(Loop *comefrom, char *structure_p, char *seq_p) {
+void BulgeLoop::printMove(Loop *comefrom, char *structure_p, BaseType *seq_p) {
 	int loop;
 	int item = (bulge_seq[0] < bulge_seq[1]);
 
@@ -3605,7 +3605,7 @@ void InteriorLoop::regenerateDeleteMoves(void) {
 	generateMoves();
 }
 
-char *InteriorLoop::getLocation(Move *move, int index) {
+BaseType *InteriorLoop::getLocation(Move *move, int index) {
 
 	if (move->getType() & MOVE_CREATE) {
 		if (move->getType() & MOVE_1)
@@ -4215,7 +4215,7 @@ void MultiLoop::regenerateDeleteMoves(void) {
 	generateMoves();
 }
 
-void MultiLoop::printMove(Loop *comefrom, char *structure_p, char *seq_p) {
+void MultiLoop::printMove(Loop *comefrom, char *structure_p, BaseType *seq_p) {
 	int loop, item, loop2;
 	for (loop = 0; loop < numAdjacent; loop++) {
 		loop2 = (loop + 1) % numAdjacent;
@@ -4827,7 +4827,7 @@ void OpenLoop::regenerateDeleteMoves(void) {
 	generateMoves();
 }
 
-void OpenLoop::printMove(Loop *comefrom, char *structure_p, char *seq_p) {
+void OpenLoop::printMove(Loop *comefrom, char *structure_p, BaseType *seq_p) {
 
 	int loop, item, loop2;
 

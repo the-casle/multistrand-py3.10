@@ -55,6 +55,7 @@ class Test_InitialInfo:
         """
         # set kinetic parameters
         getattr(opt, kinetics)()
+        initialize_energy_model(opt)
 
         # initialise full simulator state twice
         _ = None if capfd is None else capfd.readouterr()

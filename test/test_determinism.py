@@ -3,7 +3,7 @@
 # The Multistrand Team (help@multistrand.org)
 
 from itertools import chain
-from typing import List
+from typing import List, Union
 
 import numpy as np
 import pytest
@@ -45,7 +45,7 @@ class Test_Determinism:
 
     @classmethod
     def single_run(cls, start_complex: Complex,
-                   seed: int, verbose: bool) -> List[float | str]:
+                   seed: int, verbose: bool) -> List[Union[float, str]]:
         opt = cls.create_config(start_complex, seed)
         sys = SimSystem(opt)
         sys.start()
