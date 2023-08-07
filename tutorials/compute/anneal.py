@@ -4,7 +4,7 @@
 
 from multistrand.concurrent import MergeSim, FirstStepRate, Bootstrap
 from multistrand.experiment import standardOptions, hybridization
-from multistrand.options import Literals
+from multistrand.options import Literals, Options
 
 
 num_threads = 10
@@ -20,14 +20,11 @@ def first_step_simulation(strand_seq: str, trials: int, timeout: float,
     print(f"\nRunning first step mode simulations for {strand_seq} "
           "(with Boltzmann sampling)...\n")
 
-    def getOptions(_trials):
-        o = standardOptions(simMode=Literals.first_step,
-                            tempIn=temperature, trials=_trials, timeOut=timeout)
-        o.sodium = sodium
-        hybridization(o, strand_seq, _trials)
+    def getOptions(trials):
+        o = Options(simulation_mode=Literals.first_step, num_simulations=trials, sodium=sodium, material=material)
+        hybridization(o, strand_seq, trials)
         # o.DNA23Arrhenius()
         o.JSDefault()
-        o.substrate_type = material
         return o
       
     myMultistrand.setNumOfThreads(num_threads)
@@ -57,3 +54,7 @@ def computeAndWriteToCL(strand_seq, doBootstrap, temperature=25.0, sodium=1.0):
         bounds = bootstrap.ninetyFivePercentiles()
         
         print(f"Estimated 95% confidence interval: [{bounds[0]:.2e},{bounds[1]:.2e}]")
+
+
+if __name__ == '__main__':
+    compute("ATCCCAATCAACACCTTTCCTA")

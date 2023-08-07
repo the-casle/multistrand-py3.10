@@ -526,10 +526,11 @@ class MergeSim:
 
     numOfThreads = 2
     seed = 7713147777
+    ctx = multiprocess.get_context('spawn')
 
     def __init__(self, settings=None):
         self.initializationTime = time.time()
-        if multiprocess.current_process().name == "MainProcess":
+        if self.ctx.current_process().name == "MainProcess":
             print(f"{timeStamp()}   Starting Multistrand {__version__}  "
                   f"(c) 2008-2023 Caltech")
 
@@ -610,7 +611,7 @@ class MergeSim:
         """
         lockArray = list()
         for i in range(16):
-            lockArray.append(multiprocess.Lock())
+            lockArray.append(self.ctx.Lock())
 
         self.aFactory = aFactoryIn
         self.aFactory.lockArray = lockArray
@@ -679,7 +680,7 @@ class MergeSim:
             for x in options.stop_conditions:
                 myString += x.__str__() + "\n"
 
-        myProc = multiprocess.Process(target=hiddenPrint, args=[outputString])
+        myProc = self.ctx.Process(target=hiddenPrint, args=[outputString])
         myProc.start()
         myProc.join()
         myProc.terminate()
@@ -713,7 +714,7 @@ class MergeSim:
                 print(i)
                 print()
 
-        myProc = multiprocess.Process(target=actualPrint, args=[])
+        myProc = self.ctx.Process(target=actualPrint, args=[])
         myProc.start()
         myProc.join()
         myProc.terminate()
@@ -724,7 +725,7 @@ class MergeSim:
         startTime = time.time()
         assert(self.numOfThreads > 0)
 
-        manager = multiprocess.Manager()
+        manager = self.ctx.Manager()
 
         self.exceptionFlag = manager.Value('b', True)
         self.managed_result = manager.list()
@@ -770,7 +771,7 @@ class MergeSim:
 
         def getSimulation(input):
             instanceSeed = self.seed + input * 3 * 5 * 19 + (time.time() * 10000) % (math.pow(2, 32) - 1)
-            return multiprocess.Process(target=doSim, args=(
+            return self.ctx.Process(target=doSim, args=(
                 self.factory, self.aFactory, self.managed_result,
                 self.managed_endStates, instanceSeed, self.nForward, self.nReverse))
 
