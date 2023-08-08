@@ -4316,7 +4316,6 @@ OpenLoop::OpenLoop(int branches, int *sidelengths, BaseType **sequences) {
 string OpenLoop::typeInternalsToString(void) {
 
 	std::stringstream ss;
-
 	for (int i = 0; i < numAdjacent + 1; i++) {
 
 		ss << utility::sequenceToString(seqs[i], sidelen[i]) << "  -- ";

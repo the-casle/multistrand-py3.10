@@ -260,18 +260,15 @@ class Complex:
             sequence.append(strand.sequence)
 
         kwargs = {}
-        if self._substrate_type == None:
-            kwargs["material"] = "dna"
+        if self._substrate_type == "RNA":
+            kwargs["material"] = "rna06-nupack3"
         else:
-            # should always be a string via the caller inverting any int index into Constants.SUBSTRATE_TYPE strings.
-            kwargs["material"] = self._substrate_type.lower()
+            kwargs["material"] = "dna04-nupack3"
 
         if self._dangles == None:
-            pass
+            kwargs["ensemble"] = "some-nupack3"
         else:
-            # Need to hook up the ensemble to a customization options
-            kwargs["ensemble"] = "dangle-stacking"
-            #kwargs["ensemble"] = self._dangles.lower() # Note that self._dangles should always be the string as long as the calls to the setter always invert the int back into string form. NUPACK appears to use the lowercase string name as the dangles names.
+            kwargs["ensemble"] = self._dangles.lower() + "-nupack3" # Note that self._dangles should always be the string as long as the calls to the setter always invert the int back into string form. NUPACK appears to use the lowercase string name as the dangles names.
 
         if self._temperature == None:
             pass

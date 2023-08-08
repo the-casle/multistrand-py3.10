@@ -8,7 +8,7 @@ from functools import reduce
 import numpy as np
 
 from ._objects.strand import Strand
-from nupack import mfe
+from nupack import mfe, Model
 
 
 GAS_CONSTANT = 0.0019872036  # kcal / K mol
@@ -23,9 +23,9 @@ def meltingTemperature(seq, concentration=1.0e-9):
     """
     strand = Strand(sequence=seq)
 
-    energy20 = (float(mfe([strand.sequence, strand.C.sequence ], material='dna', T=20.0)[0][1])
+    energy20 = (float(mfe([strand.sequence, strand.C.sequence ], material='dna04-nupack3', T=20.0)[0][1])
                 + GAS_CONSTANT * (273.15 + 20) * np.log(55.5))
-    energy30 = (float(mfe([strand.sequence, strand.C.sequence ], material='dna', T=30.0)[0][1])
+    energy30 = (float(mfe([strand.sequence, strand.C.sequence ], material='dna04-nupack3', T=30.0)[0][1])
                 + GAS_CONSTANT * (273.15 + 30) * np.log(55.5))
 
     dS = (energy20 - energy30) / 10.0  # kcal/ K mol

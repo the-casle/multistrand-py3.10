@@ -29,18 +29,18 @@ def first_step_simulation(strand_seq: str, trials: int, timeout: float,
           "(with Boltzmann sampling)...\n")
         
     def getOptions(_trials):
-        o = standardOptions(simMode=Literals.first_passage_time,
+        o = standardOptions(simMode=Literals.first_step,
                             tempIn=temperature, trials=_trials, timeOut=timeout)
         o.sodium = sodium
         dissociation(o, strand_seq, _trials)
-        o.DNA23Arrhenius()
+        o.JSDefault()
         o.substrate_type = material
         return o
       
     myMultistrand.setNumOfThreads(num_threads)
     myMultistrand.setOptionsFactory1(getOptions, trials)
     myMultistrand.setTerminationCriteria(num_success)
-    myMultistrand.setPassageMode()
+    myMultistrand.setFirstStepMode()
     myMultistrand.run()
     return myMultistrand.results
 

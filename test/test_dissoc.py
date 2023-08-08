@@ -12,7 +12,7 @@ import pytest
 import multistrand
 from multistrand.objects import Domain
 from multistrand.utils import GAS_CONSTANT
-from nupack import pfunc
+from nupack import pfunc, Model
 
 
 class Test_Dissoc_Rate:
@@ -46,7 +46,10 @@ class Test_Dissoc_Rate:
         print(predictedD)
 
         # dotparen = "("*len(seq) + "+" + ")"*len(seq)
-        dG = pfunc([seq, seqC], [1, 2], T=(temp - 273.15), material="dna")
+        model = Model(material="dna04-nupack3", kelvin=temp, ensemble="some-nupack3")
+        pf_en = pfunc(strands=[seq, seqC], model=model)
+        Q = float(pf_en[0])
+        dG = pf_en[1]
         print(f"dG = {dG}")
 
         k1_A = predictedA.k1() * math.exp(dG / (GAS_CONSTANT * temp))
