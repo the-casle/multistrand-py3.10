@@ -66,6 +66,7 @@ class Test_SingleStrandEnergy:
                 else:
                     assert category is not None
                     dataset[category].append(l.strip())
+            f.close()
         # parse and subsample
         complexes = {}
         for category, samples in dataset.items():
@@ -91,7 +92,7 @@ class Test_SingleStrandEnergy:
                          complexes: Tuple[Iterable[str], Iterable[str]]) -> None:
         for seq, struct in zip(*complexes):
             assert len(seq) == len(struct)
-            model1 = nupack.Model(material='dna', ensemble="some-nupack3")
+            model1 = nupack.Model(material='dna04-nupack3', ensemble="some-nupack3")
             e_nupack = nupack.energy([seq], struct, model=model1)
             c_multistrand = Complex(
                 strands=[Strand(name="hairpin", sequence=seq)], structure=struct)

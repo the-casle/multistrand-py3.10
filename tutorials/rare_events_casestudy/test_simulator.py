@@ -54,6 +54,7 @@ def iterateResults(seqs, nTrials):
             mf.write(str(result))
             mf.write("\n\n")
             mf.flush()
+        mf.close()
 
 
 # # The actual main method

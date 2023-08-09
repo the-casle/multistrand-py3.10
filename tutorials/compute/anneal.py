@@ -23,8 +23,8 @@ def first_step_simulation(strand_seq: str, trials: int, timeout: float,
                             tempIn=temperature, trials=_trials, timeOut=timeout)
         o.sodium = sodium
         hybridization(o, strand_seq, _trials)
-        # o.DNA23Arrhenius()
-        o.JSDefault()
+        o.DNA23Arrhenius()
+        #o.JSDefault()
         o.substrate_type = material
         return o
 

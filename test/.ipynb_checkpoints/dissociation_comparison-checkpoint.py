@@ -1,4 +1,3 @@
-from __future__ import print_function
 # # Comparison of Multistrand methods to compute dissociation rates for duplexes.
 
 # # We can either compute dissociation rate k- directly or compute k+ and

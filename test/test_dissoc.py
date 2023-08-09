@@ -90,6 +90,7 @@ def main():
 
         seq = "ATCCCAATCAACACCTTTCCTA"
         Test_Dissoc_Rate.comparison(seq, f)
+        f.close()
 
 
 if __name__ == '__main__':
