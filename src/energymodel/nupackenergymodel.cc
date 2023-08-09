@@ -390,7 +390,6 @@ double NupackEnergyModel::MultiloopEnergy(int size, int *sidelen, BaseType **seq
 }
 
 double NupackEnergyModel::OpenloopEnergy(int size, int *sidelen, BaseType **sequences) {
-
 	return OpenloopEnergy(size, sidelen, sequences, multiloop_dG);
 
 }
@@ -548,7 +547,6 @@ FILE* NupackEnergyModel::openFiles(char* nupackhome, string& paramPath, string& 
 
 void NupackEnergyModel::processOptions() {
 
-	// 	This is the tough part, performing all read/input duties.
 	int loop, loop2, loop3, loop4, loop5, loop6;
 	double temperature;
 	FILE *fp = NULL; // fp is json file.

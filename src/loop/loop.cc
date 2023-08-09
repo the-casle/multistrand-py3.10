@@ -375,9 +375,7 @@ void Loop::printAllMoves(Loop* from) {
 }
 
 void Loop::generateAndSaveDeleteMove(Loop* input, int position) {
-
 	RateArr tempRate = Loop::generateDeleteMoveRate(this, input);
-
 	double rate = energyModel->applyPrefactors(tempRate.rate, tempRate.left, tempRate.right);
 
 	// if rate is less than zero, nuke the program.
@@ -401,7 +399,7 @@ RateArr Loop::generateDeleteMoveRate(Loop *start, Loop *end) {
 	MoveType right = stackMove;
 	int s_index = 0;
 	int e_index = 0;
-
+    printf("in gendeletemoverate\n");
 	if (identify(start, end, 'S', 'S')) {
 
 		StackLoop *start_ = (StackLoop *) start;
@@ -558,7 +556,6 @@ RateArr Loop::generateDeleteMoveRate(Loop *start, Loop *end) {
 	}
 
 	if (identify(start, end, 'S', 'O')) {
-
 		std::pair<Loop*, Loop*> ordered = orderMyLoops(start, end, 'S');
 		StackLoop* start_ = (StackLoop*) ordered.first;
 		OpenLoop* end_ = (OpenLoop*) ordered.second;
@@ -596,7 +593,6 @@ RateArr Loop::generateDeleteMoveRate(Loop *start, Loop *end) {
 			end_->numAdjacent, sidelens, seqs);
 		old_energy = start->getEnergy() + end->getEnergy();
 		tempRate = energyModel->returnRate(old_energy, new_energy, 0);
-
 		delete[] sidelens;
 		delete[] seqs;
 
@@ -4812,12 +4808,10 @@ void OpenLoop::generateMoves(void) {
 
 void OpenLoop::generateDeleteMoves(void) {
 	assert(moves != NULL);
-
 	for (int loop = 0; loop < numAdjacent; loop++) {
 		generateAndSaveDeleteMove(adjacentLoops[loop], loop);
 
 	}
-
 	totalRate = moves->getRate();
 }
 

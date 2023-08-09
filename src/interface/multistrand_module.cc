@@ -16,6 +16,8 @@ The Multistrand Team (help@multistrand.org)
 #include "ssystem.h"
 #include "simoptions.h"
 #include "options.h"
+
+#include <time.h>
 #include <string.h>
 /* for strcmp */
 

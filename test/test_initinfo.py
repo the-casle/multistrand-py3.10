@@ -371,6 +371,3 @@ if __name__ == "__main__":
     test_id = "0"
     test_args = ["CC", "CAAC"]
     Test_InitialInfo.debug_single_test(test_id, *test_args)
-
-    #test_id = "0C"
-    #Test_InitialInfo.debug_single_test(test_id)

@@ -16,6 +16,8 @@ from multistrand.system import initialize_energy_model, energy
 from multistrand.objects import Complex, Strand
 import nupack
 
+import time
+
 
 def split_tasks(n_tasks: int, n_workers: int) -> List[np.ndarray]:
     """
@@ -82,7 +84,7 @@ class Test_SingleStrandEnergy:
     @staticmethod
     def create_config() -> Options:
         opt = Options()
-        opt.verbosity = 0
+        opt.verbosity = 3
         opt.DNA23Metropolis()
         initialize_energy_model(opt)
         return opt
@@ -90,13 +92,23 @@ class Test_SingleStrandEnergy:
     @staticmethod
     def compare_energies(opt: Options, rel_tol: float, category: str,
                          complexes: Tuple[Iterable[str], Iterable[str]]) -> None:
+        model1 = nupack.Model(material='dna04-nupack3', ensemble="some-nupack3")
         for seq, struct in zip(*complexes):
             assert len(seq) == len(struct)
-            model1 = nupack.Model(material='dna04-nupack3', ensemble="some-nupack3")
-            e_nupack = nupack.energy([seq], struct, model=model1)
+            start_nupack = time.time()
+            e_nupack = nupack.structure_energy([seq], struct, model=model1)
+            end_nupack = time.time()
+            print(end_nupack - start_nupack)
+
+            start_multistrand = time.time()
             c_multistrand = Complex(
                 strands=[Strand(name="hairpin", sequence=seq)], structure=struct)
             e_multistrand = energy(
                 [c_multistrand], opt, Energy_Type.Complex_energy)
+            end_multistrand = time.time()
+            print(f"nupack elapsed: {end_nupack - start_nupack} multistrand elapsed: {end_multistrand - start_multistrand}")
             assert np.allclose(e_nupack, e_multistrand, rtol=rel_tol), \
                 f"category = {category}, seq = {seq}, struct = {struct}"
+
+if __name__ == "__main__":
+    Test_SingleStrandEnergy.test_energy(Test_SingleStrandEnergy, examples_file= (Path(__file__).parent / 'testSetSS.txt'), rel_tol=1e-6)
