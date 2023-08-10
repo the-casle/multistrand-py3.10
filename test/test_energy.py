@@ -65,7 +65,6 @@ class Test_SingleStrandEnergy:
     def create_config() -> Options:
         opt = Options(verbosity=0, reuse_energymodel=True)
         opt.DNA23Metropolis()
-        initialize_energy_model(opt)
         return opt
 
     @staticmethod

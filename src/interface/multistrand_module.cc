@@ -234,7 +234,6 @@ static PyObject *System_initialize_energymodel(PyObject *self, PyObject *args) {
 
 	if (temp != NULL)
 		delete temp;
-
 	if (options_object == NULL || options_object == Py_None)
 		Loop::SetEnergyModel( NULL);
 	else {
