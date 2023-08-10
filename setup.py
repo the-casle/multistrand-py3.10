@@ -18,7 +18,7 @@ setup(ext_modules=[Extension(
     language="c++",
     undef_macros=['NDEBUG'],
     # define_macros=[('DEBUG_MACROS', None)],
-    extra_compile_args = ["-O3", "-std=c++11", "-Wall", "-Wconversion"],
+    extra_compile_args = ["-O0", "-w", "-g", "-std=c++11", "-Wall", "-Wconversion", "-fno-inline"],
     sources=[f"src/{d}/{f}.cc" for d, fs in sources.items()
              for f in fs.split(" ")])])
 

@@ -3,8 +3,6 @@
 # The Multistrand Team (help@multistrand.org)
 
 from collections import defaultdict
-from functools import partial
-from multiprocessing import Pool, cpu_count
 from pathlib import Path
 from typing import Dict, Iterable, List, Tuple, Optional
 
@@ -19,18 +17,6 @@ import nupack
 import time
 
 
-def split_tasks(n_tasks: int, n_workers: int) -> List[np.ndarray]:
-    """
-    Partition the index set of `n_tasks` into at most `n_workers` blocks.
-    """
-    n_rem = n_tasks % (n_workers - 1)
-    tasks_div = np.arange(n_tasks - n_rem)
-    tasks_rem = np.arange(n_tasks - n_rem, n_tasks)
-    blocks = np.split(tasks_div, n_workers - 1) + [tasks_rem]
-    assert len(blocks) <= n_workers
-    return blocks
-
-
 class Test_SingleStrandEnergy:
     """
     Compare the thermodynamic scores between Multistrand and Nupack, for a set
@@ -40,21 +26,15 @@ class Test_SingleStrandEnergy:
     examples_fraction: float = 1.0  # all examples when 1.0
     examples_min: int = 1000
 
-    # runtime config
-    num_workers = max(2, cpu_count() - 2)
 
     @pytest.mark.parametrize("rel_tol", [1e-6])
     @pytest.mark.parametrize("examples_file", [Path(__file__).parent / 'testSetSS.txt'])
     def test_energy(cls, examples_file: Path, rel_tol: float):
         complexes = cls.load_complexes(examples_file)
         opt = cls.create_config()
-        pool = Pool()
         for category, (seqs, structs) in complexes.items():
             print(f"{category}: {len(seqs)}")
-            blocks = [(seqs[ix], structs[ix])
-                      for ix in split_tasks(len(seqs), cls.num_workers)]
-            pool.map(partial(cls.compare_energies, opt, rel_tol, category),
-                     blocks)
+            cls.compare_energies(opt, rel_tol, category, (seqs, structs))
 
     @classmethod
     def load_complexes(cls, path: Path) -> Dict[str, Tuple[np.ndarray, np.ndarray]]:
@@ -83,8 +63,7 @@ class Test_SingleStrandEnergy:
 
     @staticmethod
     def create_config() -> Options:
-        opt = Options()
-        opt.verbosity = 3
+        opt = Options(verbosity=0, reuse_energymodel=True)
         opt.DNA23Metropolis()
         initialize_energy_model(opt)
         return opt
@@ -98,7 +77,6 @@ class Test_SingleStrandEnergy:
             start_nupack = time.time()
             e_nupack = nupack.structure_energy([seq], struct, model=model1)
             end_nupack = time.time()
-            print(end_nupack - start_nupack)
 
             start_multistrand = time.time()
             c_multistrand = Complex(
@@ -106,7 +84,7 @@ class Test_SingleStrandEnergy:
             e_multistrand = energy(
                 [c_multistrand], opt, Energy_Type.Complex_energy)
             end_multistrand = time.time()
-            print(f"nupack elapsed: {end_nupack - start_nupack} multistrand elapsed: {end_multistrand - start_multistrand}")
+            #print(f"nupack elapsed: {end_nupack - start_nupack} multistrand elapsed: {end_multistrand - start_multistrand}")
             assert np.allclose(e_nupack, e_multistrand, rtol=rel_tol), \
                 f"category = {category}, seq = {seq}, struct = {struct}"
 

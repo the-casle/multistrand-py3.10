@@ -14,6 +14,8 @@ The Multistrand Team (help@multistrand.org)
 #include "options.h"
 #include "basetype.h"
 
+#include <time.h>
+
 // For json
 #include "rapidjson/document.h"
 #include "rapidjson/writer.h"
@@ -610,6 +612,7 @@ void NupackEnergyModel::processOptions() {
 		std::string paramPath = "/source/parameters/";
 		fp = openFiles(nupackhome, paramPath, file, 0);
 	}
+
     char buffer[65536];
     rapidjson::FileReadStream is(fp, buffer, sizeof(buffer));
 
@@ -625,6 +628,11 @@ void NupackEnergyModel::processOptions() {
 		}
 		return;
 	}
+
+
+
+    clock_t t;
+    t = clock();
 
     internal_set_stack(d);
 	internal_set_hairpin(d);

@@ -20,7 +20,6 @@ SimulationSystem::SimulationSystem(PyObject *system_o) {
 	simOptions = new PSimOptions(system_o);
 	construct();
 	energyModel->writeConstantsToFile();
-
 }
 
 SimulationSystem::SimulationSystem(SimOptions* options) {
