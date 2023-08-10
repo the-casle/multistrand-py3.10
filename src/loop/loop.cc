@@ -399,7 +399,6 @@ RateArr Loop::generateDeleteMoveRate(Loop *start, Loop *end) {
 	MoveType right = stackMove;
 	int s_index = 0;
 	int e_index = 0;
-    printf("in gendeletemoverate\n");
 	if (identify(start, end, 'S', 'S')) {
 
 		StackLoop *start_ = (StackLoop *) start;

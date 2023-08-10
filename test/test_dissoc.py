@@ -46,10 +46,11 @@ class Test_Dissoc_Rate:
         print(predictedD)
 
         # dotparen = "("*len(seq) + "+" + ")"*len(seq)
-        model = Model(material="dna04-nupack3", kelvin=temp, ensemble="some-nupack3")
+        model = Model(material="dna04-nupack3", kelvin=temp, ensemble="some-nupack3", sodium = 1.0, magnesium = 0.0)
         pf_en = pfunc(strands=[seq, seqC], model=model)
         Q = float(pf_en[0])
         dG = pf_en[1]
+        print(f"temp {temp}")
         print(f"dG = {dG}")
 
         k1_A = predictedA.k1() * math.exp(dG / (GAS_CONSTANT * temp))
