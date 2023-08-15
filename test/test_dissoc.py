@@ -14,6 +14,9 @@ from multistrand.options import Options
 from multistrand.objects import Domain
 from multistrand.utils import GAS_CONSTANT, C2K
 
+import volume_adjustment
+import nupack
+
 
 class Test_Dissoc_Rate:
     """
@@ -51,10 +54,8 @@ class Test_Dissoc_Rate:
         print(hline)
 
         # dotparen = "("*len(seq) + "+" + ")"*len(seq)
-        model = Model(material="dna04-nupack3", kelvin=temp, ensemble="some-nupack3", sodium = 1.0, magnesium = 0.0)
-        pf_en = pfunc(strands=[seq, seqC], model=model)
-        Q = float(pf_en[0])
-        dG = pf_en[1]
+        model = volume_adjustment.Model(material="DNA", kelvin=temp, ensemble="some", sodium=1.0, magnesium=0.0)
+        dG = volume_adjustment.pfunc(strands=[seq, seqC], model=model)
         print(f"temp {temp}")
         print(f"dG = {dG}")
 

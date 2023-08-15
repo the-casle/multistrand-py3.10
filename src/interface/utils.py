@@ -8,7 +8,6 @@ from functools import reduce
 import numpy as np
 
 from ._objects.strand import Strand
-from nupack import mfe, Model
 
 
 # physical constants
