@@ -10,7 +10,7 @@ from .constants import OptionsConstants
 Constants = OptionsConstants()
 
 
-class Interface(object):
+class Interface:
     def __init__(self):
         """ Sets some default values for the Interface, in addition to
         initializing the current results list, etc."""
@@ -41,8 +41,9 @@ class Interface(object):
 
         self.end_states = []
         """ A list of ending states for the trajectorys in results.
-        Each value is a list of 6-tuples, which are
-        (random number seed, unique complex id, strand names, sequence, structure, energy )
+        Each value is a list of 7-tuples, which are
+        (random number seed, unique complex id, strand names, sequence,
+         structure, energy, enthalpy)
         """
 
         self.transition_lists = []
@@ -100,7 +101,7 @@ class Interface(object):
         self._trajectory_count += 1
     
 
-class Result( object ):
+class Result:
     """
     Holds the results of a single trajectory run by multistrand.
 
@@ -150,7 +151,7 @@ class Result( object ):
                 f"result_type='status_line' )")
 
 
-class FirstStepResult( object ):
+class FirstStepResult:
     """
     Holds the results of a single trajectory run by multistrand.
 

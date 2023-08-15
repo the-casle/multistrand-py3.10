@@ -10,9 +10,9 @@ from typing import IO, Optional
 import pytest
 
 import multistrand
+from multistrand.options import Options
 from multistrand.objects import Domain
-from multistrand.utils import GAS_CONSTANT
-from nupack import pfunc, Model
+from multistrand.utils import GAS_CONSTANT, C2K
 
 
 class Test_Dissoc_Rate:
@@ -32,18 +32,23 @@ class Test_Dissoc_Rate:
         from tutorials.compute.dissociation import compute as computeDissociation
 
         seqC = Domain(name="top", sequence=seq).C.sequence
-        temp = 25.0 + 273.15 + 40
+        temp = 25.0 + 40 + C2K
         sodium = 1.0
 
+        hline = 60 * "="
         if f is not None:
             f.write(str(seq) + "   ")
             f.write(str("%0.3g" % (temp)) + "   ")
 
-        predictedA = computeAnneal(seq, temp, sodium)
+        simA = computeAnneal(seq, temp, sodium)
+        predictedA = simA.results
         print(predictedA)
-        print(60 * "=")
-        predictedD = computeDissociation(seq, temp, sodium)
+        print(hline)
+
+        simD = computeDissociation(seq, temp, sodium)
+        predictedD = simD.results
         print(predictedD)
+        print(hline)
 
         # dotparen = "("*len(seq) + "+" + ")"*len(seq)
         model = Model(material="dna04-nupack3", kelvin=temp, ensemble="some-nupack3", sodium = 1.0, magnesium = 0.0)
@@ -56,7 +61,7 @@ class Test_Dissoc_Rate:
         k1_A = predictedA.k1() * math.exp(dG / (GAS_CONSTANT * temp))
         k1_D = predictedD.k1()
         log_diff = np.abs(np.log10(k1_A) - np.log10(k1_D))
-        print(f"k1_A = {k1_A:.3g}, k1_D = {k1_D:.3g}, logdiff = {log_diff:.3g}")
+        print(f"{k1_A = :.3g}, {k1_D = :.3g}, {log_diff = :.3g}")
 
         if f is not None:
             f.write(str("%0.3g" % np.log10(k1_A)) + "    ")
@@ -64,16 +69,29 @@ class Test_Dissoc_Rate:
             f.write(str("%0.3g" % log_diff) + "    ")
             f.write("\n")
             f.flush()
-        return k1_A, k1_D, log_diff
+        return (simA, simD), (k1_A, k1_D, log_diff)
 
     @pytest.mark.parametrize("seq", ["AGCTGATTC"])
     def test_comparison(self, seq: str, tutorials: ModuleType,
                         capfd: pytest.CaptureFixture):
-        _, _, log_diff = log_ks = self.comparison(seq, tutorials)
-        assert all(isinstance(k, float) for k in log_ks)
-        assert all(k > 0 for k in log_ks)
-        assert log_diff <= .9
+        # run simulation scripts and extract rate estimates
+        (simA, simD), log_ks = self.comparison(seq, tutorials)
 
+        # check that simulation environments were configured identically, except
+        # for options concerning the reaction direction
+        optA, optD = simA.factory.new(0), simD.factory.new(0)
+        optD.simulation_mode = optA.simulation_mode
+        optD.simulation_time = optA.simulation_time
+        optD._start_state = optA._start_state.copy()
+        optD._stop_conditions = optA._stop_conditions.copy()
+        assert optA == optD
+
+        # check consistency of rate estimates
+        assert all(isinstance(k, float) and k > 0 for k in log_ks)
+        log_diff = log_ks[2]
+        assert log_diff < .2
+
+        # check expected script output
         capture = capfd.readouterr()
         print(capture.out)
         assert capture.out != ""
