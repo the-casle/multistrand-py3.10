@@ -843,16 +843,18 @@ void NupackEnergyModel::internal_set_interior_2_1(rapidjson::Document &d) {
 }
 
 void NupackEnergyModel::internal_set_interior_2_2(rapidjson::Document &d) {
+    auto& dG_interior_2_2 = d["dG"]["interior_2_2"];
+    auto& dH_interior_2_2 = d["dH"]["interior_2_2"];
     int loop, loop2, loop3, loop4, loop5, loop6;
     for (loop = 0; loop < PAIRS_NUPACK; loop++) {
         for (loop2 = 0; loop2 < PAIRS_NUPACK; loop2++) {
             for (loop3 = 1; loop3 < BASES; loop3++) {
                 for (loop4 = 1; loop4 < BASES; loop4++) {
                     for (loop5 = 1; loop5 < BASES; loop5++) {
-                        for(loop6 = 1; loop6 < BASES; loop6++){
+                        for(loop6 = 1; loop6 < BASES; loop6++){ // eek 22,500 reads
                             char name[] = {basepairString[loop + 1][0], baseTypeString[loop3][0], baseTypeString[loop4][0], basepairString[loop2 + 1][0], basepairString[loop2 + 1][2], baseTypeString[loop5][0], baseTypeString[loop6][0], basepairString[loop + 1][2],'\0'};
-                            internal_dG.internal_2_2[loop][loop2][loop3][loop4][loop5][loop6]  = d["dG"]["interior_2_2"][name].GetDouble();
-                            internal_dH.internal_2_2[loop][loop2][loop3][loop4][loop5][loop6]  = d["dH"]["interior_2_2"][name].GetDouble();
+                            internal_dG.internal_2_2[loop][loop2][loop3][loop4][loop5][loop6]  = dG_interior_2_2[name].GetDouble();
+                            internal_dH.internal_2_2[loop][loop2][loop3][loop4][loop5][loop6]  = dH_interior_2_2[name].GetDouble();
                         }
                     }
                 }

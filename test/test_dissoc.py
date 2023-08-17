@@ -12,7 +12,7 @@ import pytest
 import multistrand
 from multistrand.options import Options
 from multistrand.objects import Domain
-from multistrand.utils import GAS_CONSTANT, C2K
+from multistrand.utils.thermo import GAS_CONSTANT, C2K
 
 import volume_adjustment
 import nupack

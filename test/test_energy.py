@@ -12,7 +12,7 @@ import pytest
 from multistrand.options import Options, Energy_Type
 from multistrand.system import initialize_energy_model, energy
 from multistrand.objects import Complex, Strand
-import nupack
+import multistrand.utils.thermo as thermo
 
 import time
 
@@ -70,11 +70,12 @@ class Test_SingleStrandEnergy:
     @staticmethod
     def compare_energies(opt: Options, rel_tol: float, category: str,
                          complexes: Tuple[Iterable[str], Iterable[str]]) -> None:
-        model1 = nupack.Model(material='dna04-nupack3', ensemble="some-nupack3")
+        model1 = thermo.Model(opt)
+        i = 0
         for seq, struct in zip(*complexes):
             assert len(seq) == len(struct)
             start_nupack = time.time()
-            e_nupack = nupack.structure_energy([seq], struct, model=model1)
+            e_nupack = thermo.structure_energy([seq], struct, model=model1)
             end_nupack = time.time()
 
             start_multistrand = time.time()
@@ -88,4 +89,4 @@ class Test_SingleStrandEnergy:
                 f"category = {category}, seq = {seq}, struct = {struct}"
 
 if __name__ == "__main__":
-    Test_SingleStrandEnergy.test_energy(Test_SingleStrandEnergy, examples_file= (Path(__file__).parent / 'testSetSS.txt'), rel_tol=1e-6)
+    Test_SingleStrandEnergy.test_energy(Test_SingleStrandEnergy, examples_file= (Path(__file__).parent / 'testSetSS-small.txt'), rel_tol=1e-6)

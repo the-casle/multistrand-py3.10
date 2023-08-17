@@ -4,7 +4,7 @@
 
 from functools import reduce
 
-from nupack import Model, sample
+from ..utils.thermo import Model, sample
 import numpy as np
 
 from .strand import Strand
@@ -290,33 +290,7 @@ class Complex:
         for strand in self.strand_list:
             sequence.append(strand.sequence)
 
-        kwargs = {}
-        if self._substrate_type == "RNA":
-            kwargs["material"] = "rna06-nupack3"
-        else:
-            kwargs["material"] = "dna04-nupack3"
-
-        if self._dangles == None:
-            kwargs["ensemble"] = "some-nupack3"
-        else:
-            kwargs["ensemble"] = self._dangles.lower() + "-nupack3" # Note that self._dangles should always be the string as long as the calls to the setter always invert the int back into string form. NUPACK appears to use the lowercase string name as the dangles names.
-
-        if self._temperature == None:
-            pass
-        else:
-            kwargs["celsius"] = self._temperature
-
-        if self._sodium == None:
-            pass
-        else:
-            kwargs["sodium"] = self._sodium
-
-        if self._magnesium == None:
-            pass
-        else:
-            kwargs["magnesium"] = self._magnesium
-
-        model = Model(**kwargs)
+        model = Model(material=self._substrate_type, ensemble=self._dangles, celsius=self._temperature, sodium=self._sodium, magnesium=self._magnesium)
         results = sample(sequence, model=model, num_sample=count)
 
         self._boltzmann_queue = results

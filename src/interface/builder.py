@@ -14,7 +14,8 @@ time from the starting states until hitting an end state.
 import time, copy, os, sys
 
 from multistrand.system import SimSystem
-from multistrand.utils import uniqueStateID, seqComplement, GAS_CONSTANT
+from multistrand.utils.utility import uniqueStateID, seqComplement
+from multistrand.utils.thermo import GAS_CONSTANT
 from multistrand.options import Literals
 from multistrand.experiment import standardOptions, makeComplex
 

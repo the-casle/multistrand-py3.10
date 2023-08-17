@@ -1,4 +1,4 @@
-from ..utils import generate_sequence
+from ..utils.utility import generate_sequence
 from strand import Strand
 
 

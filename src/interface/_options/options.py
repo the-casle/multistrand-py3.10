@@ -11,7 +11,7 @@ from enum import IntEnum
 from typing import List, Optional
 
 from .interface import Interface
-from ..utils import C2K
+from ..utils.thermo import C2K
 from ..objects import Strand, Complex, StopCondition
 from ..__init__ import __version__
 

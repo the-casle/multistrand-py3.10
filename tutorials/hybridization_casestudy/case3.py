@@ -17,7 +17,7 @@ from __future__ import print_function
 
 from multistrand.options import Literals
 from multistrand.concurrent import  MergeSim
-from multistrand.utils import standardFileName
+from multistrand.utils.utility import standardFileName
 from multistrand.experiment import  hybridization, standardOptions
 
 from constantsgao import goa2006_P0, goa2006_P3, goa2006_P4, setSaltGao2006, colors, position, pathProperties, analysisFactory, analysisResult, STR_ALL

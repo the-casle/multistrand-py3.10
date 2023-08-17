@@ -25,8 +25,8 @@ class SimOptions;
 class Loop;
 class EnergyOptions;
 
-const int VIENNA = 0;
-const int MFOLD = 1;
+constexpr int VIENNA = 0;
+constexpr int MFOLD = 1;
 
 const int pairs_vienna[5] = { 0, 4, 3, 2, 1 };
 const int pairs_mfold[5] = { 0, 4, 3, 2, 1 };
