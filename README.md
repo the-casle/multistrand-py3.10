@@ -10,7 +10,7 @@
 Multistrand is a nucleic acids kinetic simulator, and is developed by the
 Winfree group at the California Institute of Technology in Pasadena, California
 (USA). Until 2013, development was lead by Joseph Schaeffer (now Autodesk).
-The project is currently maintained by Jake Kaslewicz.
+The project is currently maintained by Jake Kaslewicz and Boyan Beronov.
 
 Official website: www.multistrand.org
 
@@ -50,11 +50,11 @@ Questions should be directed to help@multistrand.org.
 
 ## Requirements
 
-| Dependency | Notes  |
-| ---------- | ------ |
+| Dependency | Notes                  |
+| ---------- |------------------------|
 | C++11      | gcc 7.4 or clang 8.0.0 |
-| Python     | 3.8+   |
-| [NUPACK](https://www.nupack.org/) | 3.2.2 |
+| Python     | 3.8+                   |
+| [NUPACK](https://www.nupack.org/) | 4.0.1                  |
  
 The `numpy` and `scipy` Python packages are installed automatically as
 dependencies, and `matplotlib` is added if the installation target `tutorials`
@@ -75,7 +75,8 @@ is specified (see `setup.cfg` for details).
  - Install Python through `homebrew`.
  - Follow the Linux installation steps.
  - In `~/.bash_profile`, edit the `$PYTHONPATH` to include
-   `/Library/Python/3.8/site-packages`.
+   `/Library/Python/<python version>/site-packages`.
+ - Ex: `/Library/Python/3.8/site-packages`
  
 ### Windows
 
@@ -91,8 +92,7 @@ is specified (see `setup.cfg` for details).
 
 ## Source tree
 
-The Multistrand library is located under `src/`, whereas `nupack/` contains the
-Nupack wrapper. `test/` is the test suite, and `tools/` provides Apptainer
+The Multistrand library is located under `src/`. `test/` is the test suite, and `tools/` provides Apptainer
 container definitions and maintenance scripts.
 
 ## Testing
